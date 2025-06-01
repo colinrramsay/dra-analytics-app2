@@ -6,12 +6,14 @@ import DraLogo from '../assets/dra-logo.png';
 
 //React imports
 import React from 'react';
+import { useState } from 'react'
 
 //Component imports
 import * as Material from '@mui/material';
 import { styled } from '@mui/material/styles';
 import StyledDropzone from './StyledDropzone';
 import ShutdownButton from './ShutdownButton';
+import Select from './Select';
 
 // MUI Styled Components
 const Container = styled('div')(({ theme }) => ({
@@ -54,10 +56,27 @@ const ButtonContainer = styled('div')(({ theme }) => ({
   marginTop: theme.spacing(3)
 }));
 
-function UploadView({ uploadFile, fetchScorecard, uploadedFile, uploadMessage, setCurrView }) {
+function UploadView({ uploadFile, fetchScorecard, uploadedFile, uploadMessage, setCurrView, fetchSync, datasets }) {
+  const [analyticsType, setAnalyticsType] = useState('single'); // State to manage analytics type
+  const [currDataset, setCurrDataset] = useState(''); // State to manage current dataset
+
+  // Handlers
+  // Function to handle analytics type change
+  function handleAnalyticsTypeChange(event) {
+    setAnalyticsType(event.target.value);
+  }
+
+  // Function to handle dataset change
+  function handleDatasetChange(event) {
+    setCurrDataset(event.target.value);
+  }
+  
   return (
     <Container>
       <div style={{ display: 'flex', justifyContent: 'flex-end', alignItems: 'center', padding: '10px' }}>
+        <Material.Button onClick={fetchSync}>
+          Sync
+        </Material.Button>
         <ShutdownButton setCurrView={setCurrView}/>
       </div>
       {/* Main content centered with padding */}
@@ -71,6 +90,22 @@ function UploadView({ uploadFile, fetchScorecard, uploadedFile, uploadMessage, s
         {uploadedFile && <FileName>{uploadedFile.fileName}</FileName>}
         {uploadMessage && <FileName>{uploadMessage}</FileName>}
         
+        {/* Analytics Type and Dataset Selection */}
+        <Select 
+          label="Scoring Type" 
+          value={analyticsType} 
+          options={['single', 'volume']} 
+          handleChange={handleAnalyticsTypeChange} 
+        />
+        {analyticsType === 'volume' && (
+          <Select 
+            label="Dataset" 
+            value={currDataset} 
+            options={datasets} 
+            handleChange={handleDatasetChange} 
+          />
+        )}
+  
         <ButtonContainer>
           <Material.Button 
             onClick={fetchScorecard}

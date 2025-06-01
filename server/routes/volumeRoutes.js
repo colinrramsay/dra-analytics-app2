@@ -9,9 +9,10 @@ const router = express.Router();
 const fs = require('fs');
 
 //PLACEHOLDER: Import geojson that will ultimately come from the cloud
-const sampleGeoJson = require('../../sample-data/private-data/sample.geojson');
+const sampleGeoJson = require('../../sample-data/private-data/sample.json'); // overwrote extension to .json for ease
 
 //PLACEHOLDER: Init dataset state by returning local datasets
+//GET to /init
 
 //GET to /sync
 //Get list of supported datasets

@@ -21,6 +21,7 @@ function App() {
   const [scorecard, setScorecard] = useState(null); //holds result of profile scoring
   const [currView, setCurrView] = useState('UploadView'); //holds current view - UploadView || AnalyticsViewSingle
   const [uploadMessage, setUploadMessage] = useState(null); //holds upload view message
+  const [datasets, setDatasets] = useState([]); //holds array of supported datasets for dropdown
 
   /* ======
   HANDLERS
@@ -49,6 +50,20 @@ function App() {
     console.error('Error fetching scorecard:', error);
     }
   };
+
+  // GET request to the server to sync data, returns array of supported datasets to populate UI dropdown
+  async function fetchSync() {
+    // Placeholder function for data sync
+    console.log('Data sync initiated');
+    try {
+      const response = await fetch('/volume/sync');
+      const datasets = await response.json();
+      setDatasets(datasets); // Update datasets state with the fetched data
+      console.log('Datasets fetched:', datasets); // Debugging log
+    } catch (error) {
+      console.error('Error fetching datasets:', error);
+    }
+  }
 
   // Read uploaded file to state
   function uploadFile(file) {
@@ -88,7 +103,7 @@ function App() {
   ======= */
   return (
     <>
-        {currView === 'UploadView' && <UploadView uploadFile={uploadFile} fetchScorecard={fetchScorecard} uploadedFile={uploadedFile} uploadMessage={uploadMessage} setCurrView={setCurrView}/>}
+        {currView === 'UploadView' && <UploadView uploadFile={uploadFile} fetchScorecard={fetchScorecard} uploadedFile={uploadedFile} uploadMessage={uploadMessage} setCurrView={setCurrView} fetchSync={fetchSync} datasets={datasets}/>}
         {currView === 'AnalyticsViewSingle' && <AnalyticsViewSingle profile={uploadedFile} scorecard={scorecard} resetUpload={resetUpload} setCurrView={setCurrView} />}
         {currView === 'ServerShutdown' && <ServerShutdownView />}
     </>

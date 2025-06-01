@@ -26,7 +26,13 @@ export default defineConfig({
         target: 'http://localhost:3001',
         changeOrigin: true,
         secure: false,
-      }
+      },
+      // Proxy all /volume requests to your backend server
+      '/volume': {
+        target: 'http://localhost:3001',
+        changeOrigin: true,
+        secure: false,
+      },
     }
   }
 })
