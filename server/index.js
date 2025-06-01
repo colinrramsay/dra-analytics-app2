@@ -7,7 +7,10 @@ const cors = require('cors');
 const path = require('path');
 const open = require('open');
 const app = express();
+
+// Import routes
 const singleRoutes = require('./routes/singleRoutes');
+const volumeRoutes = require('./routes/volumeRoutes');
 
 
 require('dotenv').config()
@@ -39,6 +42,7 @@ app.get('/', (req, res) => {
 
 //API endpoints
 app.use('/single', singleRoutes);
+app.use('/volume', volumeRoutes);
 
 // Add a route to shut down the server
 app.post('/shutdown', (req, res) => {
