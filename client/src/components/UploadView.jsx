@@ -56,19 +56,30 @@ const ButtonContainer = styled('div')(({ theme }) => ({
   marginTop: theme.spacing(3)
 }));
 
-function UploadView({ uploadFile, fetchScorecard, uploadedFile, uploadMessage, setCurrView, fetchSync, datasets }) {
-  const [analyticsType, setAnalyticsType] = useState('single'); // State to manage analytics type
+function UploadView({ uploadFile, fetchScorecard, uploadedFile, uploadMessage, setCurrView, fetchSync, datasets, analyticsType, setAnalyticsType }) {
   const [currDataset, setCurrDataset] = useState(''); // State to manage current dataset
 
   // Handlers
-  // Function to handle analytics type change
+  // Handle analytics type change
   function handleAnalyticsTypeChange(event) {
     setAnalyticsType(event.target.value);
   }
 
-  // Function to handle dataset change
+  // Handle dataset change
   function handleDatasetChange(event) {
     setCurrDataset(event.target.value);
+  }
+
+  // Handle Analyze button click
+  function handleAnalyzeClick() {
+    if (analyticsType === 'single') {
+      fetchScorecard();
+    } else if (analyticsType === 'volume' && currDataset) {
+      console.log(`Fetching volume analytics for dataset: ${currDataset}`);
+      // PLACEHOLDER: implement the logic to fetch volume analytics based on the selected dataset
+    } else {
+      console.error('Please select a valid dataset for volume analytics.');
+    }
   }
   
   return (
@@ -108,7 +119,7 @@ function UploadView({ uploadFile, fetchScorecard, uploadedFile, uploadMessage, s
   
         <ButtonContainer>
           <Material.Button 
-            onClick={fetchScorecard}
+            onClick={handleAnalyzeClick}
             variant="contained"
           >
             Analyze

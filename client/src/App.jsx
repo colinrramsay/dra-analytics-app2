@@ -22,6 +22,7 @@ function App() {
   const [currView, setCurrView] = useState('UploadView'); //holds current view - UploadView || AnalyticsViewSingle
   const [uploadMessage, setUploadMessage] = useState(null); //holds upload view message
   const [datasets, setDatasets] = useState([]); //holds array of supported datasets for dropdown
+  const [analyticsType, setAnalyticsType] = useState('single'); // State to manage analytics type - 'single || 'volume'
 
   /* ======
   HANDLERS
@@ -73,7 +74,7 @@ function App() {
     reader.onload = () => {
       try {
         const newFile = JSON.parse(reader.result); // Parse JSON from file
-        if (Helpers.validateJson(newFile)) {
+        if (Helpers.validateJson(newFile, analyticsType)) {
           newFile.fileName = Helpers.removeFileExtension(file[0].name); //returns file name without '.json'
           console.log(newFile);
           setUploadMessage(null); // Clear any previous upload message
@@ -103,7 +104,7 @@ function App() {
   ======= */
   return (
     <>
-        {currView === 'UploadView' && <UploadView uploadFile={uploadFile} fetchScorecard={fetchScorecard} uploadedFile={uploadedFile} uploadMessage={uploadMessage} setCurrView={setCurrView} fetchSync={fetchSync} datasets={datasets}/>}
+        {currView === 'UploadView' && <UploadView uploadFile={uploadFile} fetchScorecard={fetchScorecard} uploadedFile={uploadedFile} uploadMessage={uploadMessage} setCurrView={setCurrView} fetchSync={fetchSync} datasets={datasets} analyticsType={analyticsType} setAnalyticsType={setAnalyticsType}/>}
         {currView === 'AnalyticsViewSingle' && <AnalyticsViewSingle profile={uploadedFile} scorecard={scorecard} resetUpload={resetUpload} setCurrView={setCurrView} />}
         {currView === 'ServerShutdown' && <ServerShutdownView />}
     </>
