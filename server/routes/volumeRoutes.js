@@ -11,8 +11,11 @@ const fs = require('fs');
 //PLACEHOLDER: Import geojson that will ultimately come from the cloud
 const sampleGeoJson = require('../../sample-data/private-data/sample.json'); // overwrote extension to .json for ease
 
-//PLACEHOLDER: Init dataset state by returning local datasets
-//GET to /init
+// HELPER FUNCTIONS
+// Find geojson locally, if not found, fetch from cloud
+// Fetch geojson from cloud and save locally
+// Extract datasets from geojson and return
+// Map dataset file names to user-friendly names
 
 //GET to /sync
 //Get list of supported datasets
