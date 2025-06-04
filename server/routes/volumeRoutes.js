@@ -38,6 +38,11 @@ router.get('/sync', (req, res) => {
 }) 
 
 //PLACEHOLDER: Run high volume scoring
+//POST to /score
+//Run volume scoring with user inputted parameters
+router.post('/score', (req, res) => {
+    // Spawn child process to run python script for scoring
+})
 
 //Export route
 module.exports = router;
