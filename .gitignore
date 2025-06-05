@@ -145,3 +145,6 @@ dist
 
 # Private data
 sample-data/private-data
+
+# Test data
+**/testdata
