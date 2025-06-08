@@ -148,3 +148,7 @@ sample-data/private-data
 
 # Test data
 **/testdata
+
+# Python virtual environments & dependencies
+**/bin
+**/lib

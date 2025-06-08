@@ -1,0 +1,31 @@
+<aside>
+    <div class="container">
+        <style>
+            aside .container nav ul li a {
+                color: black !important;
+                text-decoration: none !important;
+                font-size: 1.2rem;
+                font-weight: bold;
+                font-family: $github-font-family !important;
+            }
+
+            aside .container nav ul li a:hover {
+                background-color: transparent !important;
+                cursor: pointer;
+            }
+        </style>
+        <nav>
+            <ul>
+                <li><a href="{{ '/' | prepend: site.baseurl }}">Home</a></li>
+                <li><a href="https://github.com/dra2020/rdapy">GitHub</a></li>
+                <!-- <li><a href="https://github.com/dra2020/dra-analytics">dra-analytics</a></li> -->
+                <li><a href="https://davesredistricting.org/maps#home">App</a></li>
+                <li><a href="{{ '/about' | prepend: site.baseurl }}">About</a></li>
+            </ul>
+        </nav>
+    </div>
+</aside>
+
+<header>
+    <!-- <h1><a href="{{ site.baseurl }}">{{ site.title }}</a></h1> -->
+</header>

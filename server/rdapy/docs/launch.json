@@ -1,0 +1,185 @@
+{
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "name": "extract_graph.py",
+            "type": "debugpy",
+            "request": "launch",
+            "program": "${file}",
+            "console": "integratedTerminal",
+            "cwd": "${workspaceFolder}",
+            "args": [
+                "--geojson",
+                "~/local/dra-to-publish/_HI_2020_VD_tabblock.vtd.datasets.geojson",
+                "--graph",
+                "temp/DEBUG_graph.json"
+            ]
+        },
+        {
+            "name": "map_scoring_data.py",
+            "type": "debugpy",
+            "request": "launch",
+            "program": "${file}",
+            "console": "integratedTerminal",
+            "cwd": "${workspaceFolder}",
+            "args": [
+                "--geojson",
+                "testdata/data/NC_vtd_datasets.v4.geojson",
+                "--data-map",
+                "temp/DEBUG_data_map.json"
+                // "--elections",
+                // "__all__"
+            ]
+        },
+        {
+            "name": "extract_data.py",
+            "type": "debugpy",
+            "request": "launch",
+            "program": "${file}",
+            "console": "integratedTerminal",
+            "cwd": "${workspaceFolder}",
+            "args": [
+                "--geojson",
+                "~/local/dra-to-publish/_CA_2020_VD_tabblock.vtd.datasets.geojson",
+                "--data-map",
+                "~/local/temp-data/CA_data_map.v4.json",
+                "--graph",
+                "~/local/dra-to-publish/CA_2020_graph.json",
+                "--data",
+                "temp/DEBUG_input_data.jsonl"
+            ]
+        },
+        {
+            "name": "canonical_to_assignments.py",
+            "type": "debugpy",
+            "request": "launch",
+            "program": "${file}",
+            "console": "integratedTerminal",
+            "cwd": "${workspaceFolder}",
+            "args": [
+                "--graph",
+                "testdata/plans/canonical/NC_congress_recom_graph.seeded.json",
+                "--input",
+                "testdata/plans/canonical/NC_congress_plans.canonical.jsonl",
+                "--output",
+                "temp/DEBUG_plans.jsonl"
+            ]
+        },
+        {
+            "name": "once.py",
+            "type": "debugpy",
+            "request": "launch",
+            "program": "${file}",
+            "console": "integratedTerminal",
+            "cwd": "${workspaceFolder}",
+            "args": [
+                "--state",
+                "NC",
+                "--plan-type",
+                "congress",
+                "--data",
+                "testdata/examples/NC_input_data.v4.jsonl",
+                "--neighborhoods",
+                "temp/DEBUG_NC_congress_neighborhoods.jsonl"
+            ]
+        },
+        {
+            "name": "aggregate.py",
+            "type": "debugpy",
+            "request": "launch",
+            "program": "${file}",
+            "console": "integratedTerminal",
+            "cwd": "${workspaceFolder}",
+            "args": [
+                "--state",
+                "NC",
+                "--plan-type",
+                "congress",
+                "--data",
+                "testdata/examples/NC_input_data.v4.jsonl",
+                "--graph",
+                "testdata/examples/NC_graph.json",
+                "--mode",
+                "all",
+                "--input",
+                "testdata/plans/NC_congress_plans.tagged.jsonl",
+                "--output",
+                "temp/DEBUG_aggs.jsonl"
+            ]
+        },
+        {
+            "name": "score.py",
+            "type": "debugpy",
+            "request": "launch",
+            "program": "${file}",
+            "console": "integratedTerminal",
+            "cwd": "${workspaceFolder}",
+            "args": [
+                "--state",
+                "NC",
+                "--plan-type",
+                "congress",
+                "--data",
+                "testdata/examples/NC_input_data.v4.jsonl",
+                "--graph",
+                "testdata/examples/NC_graph.json",
+                "--mode",
+                "all",
+                "--input",
+                "testdata/examples/NC_congress_aggs.100.v5.jsonl",
+                "--output",
+                "temp/DEBUG_scores.jsonl"
+            ]
+        },
+        {
+            "name": "write.py",
+            "type": "debugpy",
+            "request": "launch",
+            "program": "${file}",
+            "console": "integratedTerminal",
+            "cwd": "${workspaceFolder}",
+            "args": [
+                "--input",
+                "testdata/examples/NC_congress_scores.100.v5.jsonl",
+                "--data",
+                "testdata/examples/NC_input_data.v4.jsonl",
+                "--scores",
+                "temp/DEBUG_scores.csv",
+                "--by-district",
+                "temp/DEBUG_by-district.jsonl"
+            ]
+        },
+        {
+            "name": "find_neighborhoods.py",
+            "type": "debugpy",
+            "request": "launch",
+            "program": "${file}",
+            "console": "integratedTerminal",
+            "cwd": "${workspaceFolder}",
+            "args": [
+                "--state",
+                "ME",
+                "--plan-type",
+                "lower",
+                "--data",
+                "~/local/temp-data/ME_input_data.v4.jsonl",
+                "--graph",
+                "~/local/dra-to-publish/ME_2020_graph.json"
+            ]
+        },
+        {
+            "name": "generate_mods.py",
+            "type": "debugpy",
+            "request": "launch",
+            "program": "${file}",
+            "console": "integratedTerminal",
+            "cwd": "${workspaceFolder}",
+            "args": [
+                "--graph",
+                "~/local/dra-to-publish/HI_2020_graph.json",
+                "--data",
+                "~/local/temp-data/HI_input_data.v4.jsonl"
+            ]
+        }
+    ]
+}

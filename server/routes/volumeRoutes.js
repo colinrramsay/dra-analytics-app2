@@ -14,8 +14,27 @@ const sampleGeoJson = require('../../sample-data/private-data/sample.json'); // 
 // HELPER FUNCTIONS
 // Find geojson locally, if not found, fetch from cloud
 // Fetch geojson from cloud and save locally
-// Extract datasets from geojson and return
 // Map dataset file names to user-friendly names
+
+// State abbreviation geojson file name
+// Assumes stateCode is a valid two-letter state code
+function getStateAbbFileName(stateCode) {
+    //PLACEHOLDER: needs consistent naming convention for geojson files
+    const geojsonName = '';
+    return geojsonName;
+}
+
+// Extract datasets from geojson and return as array
+function getDatasetsFromGeoJson(geojson) {
+    const datasets = sampleGeoJson.features[0].properties.datasets; // Grab obj of dataset objects from first precinct
+    const arrOfDatasets = [];
+    for (const set in datasets) { // Iterate through dataset objects
+        if (set.charAt(0) === 'E') { // If dataset key starts with E, it's election data
+            arrOfDatasets.push(set); // Add to array of datasets to return as options
+        }
+    }
+    return arrOfDatasets;
+}
 
 //GET to /sync
 //Get list of supported datasets
@@ -43,6 +62,8 @@ router.get('/sync', (req, res) => {
 router.post('/score', (req, res) => {
     // Spawn child process to run python script for scoring
 })
+
+
 
 //Export route
 module.exports = router;

@@ -1,0 +1,13 @@
+Fiona
+geographiclib
+geopandas
+libpysal
+nptyping
+numpy
+pandas
+pyproj
+pytest
+scipy
+setuptools
+shapely
+gerrychain
