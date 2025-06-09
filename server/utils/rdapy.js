@@ -13,6 +13,8 @@ function runScoreScript(args) {
     const rdapyPath = process.env.RDAPY_PATH || path.resolve(__dirname, '../../rdapy');
     const venvPath = process.env.VENV_PATH;
 
+    const electionString = args.elections.join(', ');
+
     return new Promise((resolve, reject) => {
     // Command to run in the shell
     const command = `
@@ -25,6 +27,11 @@ function runScoreScript(args) {
       --graph ${args.graph} \\
       --precomputed ${args.precomputed} \\
       --plans ${args.plans} \\
+      --mode all \
+      --census ${args.census} \
+      --vap ${args.vap} \
+      --cvap ${args.cvap} \
+      --elections ${electionString} \
       --scores ${args.scores} \\
       --by-district ${args.byDistrict}
     `;
@@ -72,3 +79,22 @@ function runScoreScript(args) {
 }
 
 module.exports = { runScoreScript };
+
+/*
+Sample python command
+
+scripts/score/SCORE.sh \
+--state NC \
+--plan-type congress \
+--geojson testdata/data/NC_vtd_datasets.v4.geojson \
+--graph testdata/examples/NC_graph.json \
+--precomputed testdata/examples/NC_congress_precomputed.json \
+--plans testdata/plans/NC_congress_plans.tagged.jsonl \
+--mode all \
+--census T_20_CENS \
+--vap V_20_VAP \
+--cvap V_20_CVAP \
+--elections E_16_SEN,E_20_AG \
+--scores temp/TEST_congress_scores.csv \
+--by-district temp/TEST_congress_by-district.jsonl
+*/

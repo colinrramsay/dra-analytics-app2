@@ -7,7 +7,7 @@ root: /volume
 const express = require('express');
 const router = express.Router();
 const fs = require('fs');
-const { getStateAbbFileName, getDatasetsFromGeoJson, readGeoJSON} = require('../utils/utils');
+const { getFilePath, getDatasetsFromGeoJson, readGeoJSON, mapDatasetNames} = require('../utils/utils');
 const { runScoreScript } = require('../utils/rdapy'); // Import the function to run the scoring script
 
 //PLACEHOLDER: Import geojson that will ultimately come from the cloud
@@ -26,29 +26,38 @@ router.post('/sync', (req, res) => {
 }) 
 
 //GET to /datasets
-router.get('/datasets', (req, res) => {
+router.get('/datasets/:state', (req, res) => {
     console.log('Fetching datasets...');
-    const fileName = getStateAbbFileName('NC'); // Example for California, replace with dynamic state code as needed
-    const filePath = `../../sample-data/private-data/${fileName}`; // Adjust path as necessary
+    const filePath = getFilePath('geojson', req.params.state); // Get file path for state URL param on request
     const geoJson = readGeoJSON(filePath); // Read and parse the GeoJSON file
-    const datasets = getDatasetsFromGeoJson(sampleGeoJson); //Get list of datasets from geojson
+    // Placeholder: add logic check, if !geoJson, return error response (couldn't find/read geojson)
+    const datasets = getDatasetsFromGeoJson(geoJson); //Get list of datasets from geojson
     console.log(datasets);
-    res.json(datasets); // Return array of datasets
+    const mappedDatasets = mapDatasetNames(datasets); // Map dataset names to user-friendly names
+    res.json(mappedDatasets); // Return array of datasets with user-friendly names
 })
 
 //POST to /score
 //Run volume scoring with user inputted parameters
 router.post('/score', (req, res) => {
     // PLACEHOLDER: Manually set args for testing
-    const args = {
+    const clientArgs = {
         state: 'NC',
         planType: 'congress',
-        geojson: 'testdata/data/NC_vtd_datasets.v4.geojson',
-        graph: 'testdata/examples/NC_graph.json',
-        precomputed: 'testdata/examples/NC_congress_precomputed.json',
         plans: 'testdata/plans/NC_congress_plans.tagged.jsonl',
+        census: 'T_20_CENS',
+        vap: 'V_20_VAP',
+        cvap: 'V_20_CVAP',
+        elections: ['E_16_SEN', 'E_20_AG'],
         scores: 'temp/TEST_congress_scores.csv',
         byDistrict: 'temp/TEST_congress_by-district.jsonl'
+    }
+    // Add server-side computed args
+    const args = {
+        ...clientArgs, // Spread client args
+        geojson: getFilePath('geojson', clientArgs.state), // computed server side from state
+        graph: getFilePath('graph', clientArgs.state), // computed server side from state
+        precomputed: getFilePath('precomputed', clientArgs.state), // computed server side from state
     }
     // Spawn child process to run python script for scoring
     console.log('Scoring with parameters:', args);
@@ -58,7 +67,7 @@ router.post('/score', (req, res) => {
             console.log('Scoring completed successfully');
         })
         .catch((error) => {
-            res.status(500).json(error: error.message || error.toString());
+            res.status(500).json(error.message || error.toString());
         });
 })
 

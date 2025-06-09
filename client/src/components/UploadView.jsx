@@ -7,6 +7,7 @@ import DraLogo from '../assets/dra-logo.png';
 //React imports
 import React from 'react';
 import { useState } from 'react'
+import { useEffect } from 'react';
 
 //Component imports
 import * as Material from '@mui/material';
@@ -14,6 +15,11 @@ import { styled } from '@mui/material/styles';
 import StyledDropzone from './StyledDropzone';
 import ShutdownButton from './ShutdownButton';
 import Select from './Select';
+import AutocompleteInput from './AutocompleteInput';
+import AutocompleteInputMultiple from './AutocompleteInputMultiple';
+
+//Constants
+const STATE_CODES = ['AL', 'AK', 'AZ', 'AR', 'CA', 'CO', 'CT', 'DE', 'FL', 'GA', 'HI', 'ID', 'IL', 'IN', 'IA', 'KS', 'KY', 'LA', 'ME', 'MD', 'MA', 'MI', 'MN', 'MS', 'MO', 'MT', 'NE', 'NV', 'NH', 'NJ', 'NM', 'NY', 'NC', 'ND', 'OH', 'OK', 'OR', 'PA', 'RI', 'SC', 'SD', 'TN', 'TX', 'UT', 'VT', 'VA', 'WA', 'WV', 'WI', 'WY'];
 
 // MUI Styled Components
 const Container = styled('div')(({ theme }) => ({
@@ -56,8 +62,81 @@ const ButtonContainer = styled('div')(({ theme }) => ({
   marginTop: theme.spacing(3)
 }));
 
-function UploadView({ uploadFile, fetchScorecard, uploadedFile, uploadMessage, setCurrView, fetchSync, datasets, analyticsType, setAnalyticsType }) {
-  const [currDataset, setCurrDataset] = useState(''); // State to manage current dataset
+function UploadView({ uploadFile, fetchScorecard, uploadedFile, uploadMessage, setCurrView, fetchSync, analyticsType, setAnalyticsType }) {
+  const [datasets, setDatasets] = useState([]); // State to manage all available datasets for chosen state
+  const [filteredDatasets, setFilteredDatasets] = useState(datasets); // State to manage filtered datasets based on user selections
+  const [volumeArgs, setVolumeArgs] = useState({
+    state: null,
+    planType: null,
+    datasets: [],
+    plans: null,
+    scores: null,
+    byDistrict: null,
+  }); // State to manage volume scoring arguments
+
+  // Effect to fetch datasets when state prop of volumeArgs changes
+  useEffect(() => {
+    async function fetchDatasets() {
+      if (volumeArgs.state) {
+        console.log(`Fetching datasets for state: ${volumeArgs.state}`);
+        try {
+          const response = await fetch(`/volume/datasets/${volumeArgs.state}`);
+          const newDatasets = await response.json();
+          setDatasets(newDatasets); // Update datasets state with the fetched data
+          console.log('Datasets fetched:', newDatasets); // Debugging log
+        } catch (error) {
+          console.error('Error fetching datasets:', error);
+        }
+      }
+    }
+    fetchDatasets()
+    setDatasetsInput([]); // Reset datasets input when state changes
+  }, [volumeArgs.state]);
+
+  // Effect to filter datasets based on existing selections
+  useEffect(() => {
+    console.log('Filtering datasets based on current selections:', volumeArgs.datasets);
+    function filterDatasets() {
+      const filters = new Set();
+      // Set filters based on what has already been selected
+      // Only one of each CVAP, VAP, & Census datasets can be selected at a time
+      volumeArgs.datasets.forEach(selected => {
+        if (selected.includes('Citizen Voting Age Population')) filters.add('Citizen Voting Age Population');
+        else if (selected.includes('Voting Age Population') && !selected.includes('Citizen')) filters.add('Voting Age Population');
+        else if (selected.includes('Census')) filters.add('Census');
+      })
+      const newFilteredDatasets = datasets.filter(dataset => {
+        for (let filter of filters) {
+          if (filter !== 'Voting Age Population') {
+            if (dataset.includes(filter)) return false;
+          } else if (filter === 'Voting Age Population' && dataset.includes(filter) && !dataset.includes('Citizen')) {
+            return false; // Exclude if it's VAP but not CVAP
+          }
+        }
+        return true;
+      })
+      setFilteredDatasets(newFilteredDatasets);
+    }
+    filterDatasets();
+  }, [volumeArgs.datasets, datasets])
+    
+  // Helpers
+  // Set state input for volume scoring
+  function setStateInput(value) {
+    const prevArgs = volumeArgs;
+    setVolumeArgs({
+      ...prevArgs,
+      state: value});
+  }
+
+  // Set datasets input for volume scoring
+  function setDatasetsInput(value) {
+    console.log('Setting datasets arg:', value);
+    const prevArgs = volumeArgs;
+    setVolumeArgs({
+      ...prevArgs,
+      datasets: value});
+  }
 
   // Handlers
   // Handle analytics type change
@@ -67,7 +146,7 @@ function UploadView({ uploadFile, fetchScorecard, uploadedFile, uploadMessage, s
 
   // Handle dataset change
   function handleDatasetChange(event) {
-    setCurrDataset(event.target.value);
+    //PLACEHOLDER: setCurrDataset(event.target.value);
   }
 
   // Handle Analyze button click
@@ -108,15 +187,21 @@ function UploadView({ uploadFile, fetchScorecard, uploadedFile, uploadMessage, s
           options={['single', 'volume']} 
           handleChange={handleAnalyticsTypeChange} 
         />
+        {/* Volume Scoring Options */}
         {analyticsType === 'volume' && (
-          <Select 
-            label="Dataset" 
-            value={currDataset} 
-            options={datasets} 
-            handleChange={handleDatasetChange} 
-          />
+          <>
+            <AutocompleteInput 
+              options={STATE_CODES} 
+              value={volumeArgs.state} 
+              setValue={setStateInput}
+              label='State' />
+            <AutocompleteInputMultiple 
+              options={filteredDatasets} 
+              value={volumeArgs.datasets} 
+              setValue={setDatasetsInput}
+              label='Datasets' />
+          </>
         )}
-  
         <ButtonContainer>
           <Material.Button 
             onClick={handleAnalyzeClick}
