@@ -7,7 +7,7 @@ root: /volume
 const express = require('express');
 const router = express.Router();
 const fs = require('fs');
-const { getFilePath, getDatasetsFromGeoJson, readGeoJSON, mapDatasetNames} = require('../utils/utils');
+const { getFilePath, getDatasetsFromGeoJson, readGeoJSON, mapDatasetNames, mapDatasetFileNames, assignDatasets} = require('../utils/utils');
 const { runScoreScript } = require('../utils/rdapy'); // Import the function to run the scoring script
 
 //PLACEHOLDER: Import geojson that will ultimately come from the cloud
@@ -40,21 +40,22 @@ router.get('/datasets/:state', (req, res) => {
 //POST to /score
 //Run volume scoring with user inputted parameters
 router.post('/score', (req, res) => {
-    // PLACEHOLDER: Manually set args for testing
+    // PLACEHOLDER: Manually set certain args for testing until functionality is implemented in client
     const clientArgs = {
-        state: 'NC',
+        ...req.body, // Spread client args from request body
+        // state: 'NC',
         planType: 'congress',
         plans: 'testdata/plans/NC_congress_plans.tagged.jsonl',
-        census: 'T_20_CENS',
-        vap: 'V_20_VAP',
-        cvap: 'V_20_CVAP',
-        elections: ['E_16_SEN', 'E_20_AG'],
-        scores: 'temp/TEST_congress_scores.csv',
-        byDistrict: 'temp/TEST_congress_by-district.jsonl'
+        // datasets: ['V_20_VAP', 'V_20_CVAP', 'E_16_SEN', 'E_20_AG', 'T_20_CENS'], // Example datasets
+        scores: '../../output/TEST_congress_scores.csv',
+        byDistrict: '../../output/TEST_congress_by-district.jsonl'
     }
-    // Add server-side computed args
+    const datasetArgs = assignDatasets(mapDatasetFileNames(clientArgs.datasets)); // Map dataset back to file names & assign to arg props
+    delete clientArgs.datasets; // Remove datasets prop from client args, as it is now assigned in datasetArgs
+    // Add server-side computed prop & assigned datasets
     const args = {
         ...clientArgs, // Spread client args
+        ...datasetArgs, // Spread dataset args
         geojson: getFilePath('geojson', clientArgs.state), // computed server side from state
         graph: getFilePath('graph', clientArgs.state), // computed server side from state
         precomputed: getFilePath('precomputed', clientArgs.state), // computed server side from state

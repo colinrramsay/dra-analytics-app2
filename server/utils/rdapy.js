@@ -13,7 +13,7 @@ function runScoreScript(args) {
     const rdapyPath = process.env.RDAPY_PATH || path.resolve(__dirname, '../../rdapy');
     const venvPath = process.env.VENV_PATH;
 
-    const electionString = args.elections.join(', ');
+    const electionString = args.elections.join(',');
 
     return new Promise((resolve, reject) => {
     // Command to run in the shell

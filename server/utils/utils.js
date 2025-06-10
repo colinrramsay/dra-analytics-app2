@@ -15,8 +15,8 @@ exports.getFilePath = function(type, stateCode) {
         const fileName = `_${stateCode}_2020_VD_tabblock.vtd.datasets.geojson`;
         return `../../sample-data/private-data/${fileName}`;
     } else if (type === 'graph') {
-        const fileName = `${stateCode}_graph.json`;
-        return `../rdapy/testdata/examples/${fileName}`;
+        const fileName = `${stateCode}_2020_graph.json`;
+        return `../../sample-data/private-data/${fileName}`;
     } else if (type === 'precomputed') {
         const fileName = `${stateCode}_congress_precomputed.json`;
         return `../rdapy/testdata/examples/${fileName}`;
@@ -93,8 +93,73 @@ exports.mapDatasetNames = function(datasets) {
             }
             return datasetMap[param] || param; // Map each param to its user-friendly name or keep original if not found
         })
-        return mappedParams.join(' '); // Join the mapped params back into a string
+        return mappedParams.join(' - '); // Join the mapped params back into a string
     });
+}
+
+// Map dataset names to their original file names
+exports.mapDatasetFileNames = function(datasets) {
+    const fileMap = {
+        'Total Population': 'T',
+        'Voting Age': 'V',
+        'Elections': 'E',
+        'Shapes': '',
+        'Census': 'CENS',
+        'Census Adjusted': 'CENS_ADJ',
+        'American Community Survey': 'ACS',
+        'Voting Age Population': 'VAP',
+        'Voting Age Population Non-Hispanic': 'VAP_NH',
+        'Citizen Voting Age Population': 'CVAP',
+        'Composite': 'COMP',
+        'President': 'PRES',
+        'U.S. Senator': 'SEN',
+        'Governor': 'GOV',
+        'Attorney General': 'AG',
+        'Auditor': 'AUD',
+        'Lieutenant Governor': 'LTG',
+        'Secretary of State': 'SOS',
+        'Treasurer': 'TREAS',
+        'Comptroller': 'CMPTR',
+        'State Supreme Court': 'SC',
+        'U.S. Congress': 'CONG',
+        'Runoff Election': 'ROFF',
+        'Special Election': 'SPEC',
+        'Special Runoff Election': 'SPECROFF' 
+    };
+    // Map dataset names to their original file names
+    return datasets.map(dataset => {
+        const params = dataset.split(' - ');
+        const fileName = params.map(param => {
+            if (param.startsWith('State Supreme Court')) {
+                // Handle State Supreme Court with seat designation
+                return `SC${param.slice(21)}`; // Extract seat designation
+            }
+            return fileMap[param] || param; // Map to file name or keep original if not found
+        }).join('_');
+        return fileName;
+    });
+}
+
+// Assign datasets to arg props: census || vap || cvap || elections
+exports.assignDatasets = function(datasets) {
+    const datasetArgs = {
+        census: null,
+        vap: null,
+        cvap: null,
+        elections: []
+    };
+    datasets.forEach(dataset => {
+        if (dataset.includes('CENS')) {
+            datasetArgs.census = dataset;
+        } else if (dataset.includes('CVAP')) {
+            datasetArgs.cvap = dataset;
+        } else if (dataset.includes('VAP')) {
+            datasetArgs.vap = dataset;
+        } else if (dataset.includes('E_')) {
+            datasetArgs.elections.push(dataset);
+        }
+    })
+    return datasetArgs;
 }
 
 /*

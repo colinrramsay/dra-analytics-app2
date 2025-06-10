@@ -138,6 +138,27 @@ function UploadView({ uploadFile, fetchScorecard, uploadedFile, uploadMessage, s
       datasets: value});
   }
 
+  // Run volume scoring
+  async function fetchVolumeScore() {
+    // if (!uploadedFile) {
+    //   setUploadMessage('Please upload a file first.');
+    //   return;
+    // };
+    try {
+    const response = await fetch('/volume/score', {
+      method: 'POST',
+      headers: {
+      'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(volumeArgs),
+    });
+    const res = await response.json();
+    console.log('Volume scoring response:', res);
+    } catch (error) {
+    console.error('Error running volume scoring:', error);
+    }
+  }
+
   // Handlers
   // Handle analytics type change
   function handleAnalyticsTypeChange(event) {
@@ -153,9 +174,9 @@ function UploadView({ uploadFile, fetchScorecard, uploadedFile, uploadMessage, s
   function handleAnalyzeClick() {
     if (analyticsType === 'single') {
       fetchScorecard();
-    } else if (analyticsType === 'volume' && currDataset) {
-      console.log(`Fetching volume analytics for dataset: ${currDataset}`);
-      // PLACEHOLDER: implement the logic to fetch volume analytics based on the selected dataset
+    } else if (analyticsType === 'volume') {
+      console.log(`Volume scoring with args:`, volumeArgs);
+      fetchVolumeScore();
     } else {
       console.error('Please select a valid dataset for volume analytics.');
     }

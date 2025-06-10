@@ -143,8 +143,9 @@ dist
 .yarn/install-state.gz
 .pnp.*
 
-# Private data
+# Private data & Score Outputs
 sample-data/private-data
+output
 
 # Test data
 **/testdata
