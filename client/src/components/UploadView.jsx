@@ -65,6 +65,7 @@ const ButtonContainer = styled('div')(({ theme }) => ({
 function UploadView({ uploadFile, fetchScorecard, uploadedFile, uploadMessage, setCurrView, fetchSync, analyticsType, setAnalyticsType }) {
   const [datasets, setDatasets] = useState([]); // State to manage all available datasets for chosen state
   const [filteredDatasets, setFilteredDatasets] = useState(datasets); // State to manage filtered datasets based on user selections
+  const [plans, setPlans] = useState(getPlans()); // State to manage available plans for volume scoring
   const [volumeArgs, setVolumeArgs] = useState({
     state: null,
     planType: null,
@@ -121,6 +122,27 @@ function UploadView({ uploadFile, fetchScorecard, uploadedFile, uploadMessage, s
   }, [volumeArgs.datasets, datasets])
     
   // Helpers
+
+  // Get available plans for volume scoring
+  async function getPlans() {
+    try {
+      const response = await fetch(`/volume/plans`);
+      const newPlans = await response.json();
+      setPlans(newPlans); // Update available plans state
+      console.log('Plans fetched:', newPlans); // Debugging log
+    } catch (error) {
+      console.error('Error fetching plans:', error);
+    }
+  }
+
+  // Set plans input for volume scoring
+  function setPlansInput(value) {
+    const prevArgs = volumeArgs;
+    setVolumeArgs({
+      ...prevArgs,
+      plans: value});
+  }
+
   // Set state input for volume scoring
   function setStateInput(value) {
     const prevArgs = volumeArgs;
@@ -140,10 +162,7 @@ function UploadView({ uploadFile, fetchScorecard, uploadedFile, uploadMessage, s
 
   // Run volume scoring
   async function fetchVolumeScore() {
-    // if (!uploadedFile) {
-    //   setUploadMessage('Please upload a file first.');
-    //   return;
-    // };
+    // Placeholde: add arg validation for reqd fields
     try {
     const response = await fetch('/volume/score', {
       method: 'POST',
@@ -211,6 +230,11 @@ function UploadView({ uploadFile, fetchScorecard, uploadedFile, uploadMessage, s
         {/* Volume Scoring Options */}
         {analyticsType === 'volume' && (
           <>
+            <AutocompleteInput 
+              options={plans} 
+              value={volumeArgs.plans} 
+              setValue={setPlansInput}
+              label='Plans' />
             <AutocompleteInput 
               options={STATE_CODES} 
               value={volumeArgs.state} 

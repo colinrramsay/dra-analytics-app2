@@ -13,7 +13,7 @@ const { runScoreScript } = require('../utils/rdapy'); // Import the function to 
 //Load environment variables
 require('dotenv').config();
 const OUTPUT_PATH = process.env.OUTPUT_PATH || '../../output/'; // Default output path if not set in .env
-const INPUT_PATH = process.env.INPUT_PATH || '../../input/'; // Default input path if not set in .env
+const PLANS_PATH = process.env.INPUT_PATH || '../../input/'; // Default input path if not set in .env
 
 //POST to /sync
 //Download requested geojson files from cloud, save locally
@@ -27,19 +27,19 @@ router.post('/sync', (req, res) => {
     // or res with geojsons that could not be fetched
 })
 
-//GET to /inputs
-//Get list of input files available for scoring
-router.get('/inputs', (req, res) => {
-    console.log('Fetching input files...');
-    // Get list of input files from the input directory
-    fs.readdir(INPUT_PATH, (err, files) => {
+//GET to /plans
+//Get list of plan files available for scoring
+router.get('/plans', (req, res) => {
+    console.log('Fetching plan files...');
+    // Get list of planfiles from the input directory
+    fs.readdir(PLANS_PATH, (err, files) => {
         if (err) {
             console.error('Error reading input directory:', err);
-            return res.status(500).json({ error: 'Failed to read input directory' });
+            return res.status(500).json({ error: 'Failed to read plans directory' });
         }
         // Filter for JSONL files
-        const inputFiles = files.filter(file => file.endsWith('.jsonl'));
-        res.json(inputFiles); // Return list of input files
+        const planFiles = files.filter(file => file.endsWith('.jsonl'));
+        res.json(planFiles); // Return list of input files
     });
 })
 
@@ -63,7 +63,7 @@ router.post('/score', (req, res) => {
         ...req.body, // Spread client args from request body
         // state: 'NC',
         planType: 'congress',
-        plans: `${INPUT_PATH}NC_congress_plans.tagged.jsonl`,
+        plans: `${PLANS_PATH}NC_congress_plans.tagged.jsonl`,
         // datasets: ['V_20_VAP', 'V_20_CVAP', 'E_16_SEN', 'E_20_AG', 'T_20_CENS'], // Example datasets
         scores: `${OUTPUT_PATH}TEST_congress_scores.csv`,
         byDistrict: `${OUTPUT_PATH}TEST_congress_by-district.jsonl`
