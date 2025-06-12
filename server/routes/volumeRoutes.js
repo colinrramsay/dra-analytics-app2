@@ -10,8 +10,10 @@ const fs = require('fs');
 const { getFilePath, getDatasetsFromGeoJson, readGeoJSON, mapDatasetNames, mapDatasetFileNames, assignDatasets} = require('../utils/utils');
 const { runScoreScript } = require('../utils/rdapy'); // Import the function to run the scoring script
 
-//PLACEHOLDER: Import geojson that will ultimately come from the cloud
-const sampleGeoJson = require('../../sample-data/private-data/sample.json'); // overwrote extension to .json for ease
+//Load environment variables
+require('dotenv').config();
+const OUTPUT_PATH = process.env.OUTPUT_PATH || '../../output/'; // Default output path if not set in .env
+const INPUT_PATH = process.env.INPUT_PATH || '../../input/'; // Default input path if not set in .env
 
 //POST to /sync
 //Download requested geojson files from cloud, save locally
@@ -23,7 +25,23 @@ router.post('/sync', (req, res) => {
     console.log('Fetching geojsons from cloud...');
     res.json('All geojsons fetched and saved locally.'); // Placeholder response
     // or res with geojsons that could not be fetched
-}) 
+})
+
+//GET to /inputs
+//Get list of input files available for scoring
+router.get('/inputs', (req, res) => {
+    console.log('Fetching input files...');
+    // Get list of input files from the input directory
+    fs.readdir(INPUT_PATH, (err, files) => {
+        if (err) {
+            console.error('Error reading input directory:', err);
+            return res.status(500).json({ error: 'Failed to read input directory' });
+        }
+        // Filter for JSONL files
+        const inputFiles = files.filter(file => file.endsWith('.jsonl'));
+        res.json(inputFiles); // Return list of input files
+    });
+})
 
 //GET to /datasets
 router.get('/datasets/:state', (req, res) => {
@@ -45,10 +63,10 @@ router.post('/score', (req, res) => {
         ...req.body, // Spread client args from request body
         // state: 'NC',
         planType: 'congress',
-        plans: 'testdata/plans/NC_congress_plans.tagged.jsonl',
+        plans: `${INPUT_PATH}NC_congress_plans.tagged.jsonl`,
         // datasets: ['V_20_VAP', 'V_20_CVAP', 'E_16_SEN', 'E_20_AG', 'T_20_CENS'], // Example datasets
-        scores: '../../output/TEST_congress_scores.csv',
-        byDistrict: '../../output/TEST_congress_by-district.jsonl'
+        scores: `${OUTPUT_PATH}TEST_congress_scores.csv`,
+        byDistrict: `${OUTPUT_PATH}TEST_congress_by-district.jsonl`
     }
     const datasetArgs = assignDatasets(mapDatasetFileNames(clientArgs.datasets)); // Map dataset back to file names & assign to arg props
     delete clientArgs.datasets; // Remove datasets prop from client args, as it is now assigned in datasetArgs

@@ -146,6 +146,7 @@ dist
 # Private data & Score Outputs
 sample-data/private-data
 output
+input
 
 # Test data
 **/testdata
