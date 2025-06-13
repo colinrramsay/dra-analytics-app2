@@ -7,13 +7,14 @@ root: /volume
 const express = require('express');
 const router = express.Router();
 const fs = require('fs');
+const path = require('path');
 const { getFilePath, getDatasetsFromGeoJson, readGeoJSON, mapDatasetNames, mapDatasetFileNames, assignDatasets} = require('../utils/utils');
 const { runScoreScript } = require('../utils/rdapy'); // Import the function to run the scoring script
 
 //Load environment variables
 require('dotenv').config();
-const OUTPUT_PATH = process.env.OUTPUT_PATH || '../../output/'; // Default output path if not set in .env
-const PLANS_PATH = process.env.INPUT_PATH || '../../input/'; // Default input path if not set in .env
+const OUTPUT_PATH = path.join(__dirname, process.env.OUTPUT_PATH) || path.join(__dirname, '../../output/'); // Default output path if not set in .env
+const PLANS_PATH = path.join(__dirname, process.env.PLANS_PATH) || path.join(__dirname, '../../plans/'); // Default input path if not set in .env
 
 //POST to /sync
 //Download requested geojson files from cloud, save locally
@@ -65,8 +66,7 @@ router.post('/score', (req, res) => {
         planType: 'congress',
         plans: `${PLANS_PATH}NC_congress_plans.tagged.jsonl`,
         // datasets: ['V_20_VAP', 'V_20_CVAP', 'E_16_SEN', 'E_20_AG', 'T_20_CENS'], // Example datasets
-        scores: `${OUTPUT_PATH}TEST_congress_scores.csv`,
-        byDistrict: `${OUTPUT_PATH}TEST_congress_by-district.jsonl`
+        output: `${OUTPUT_PATH}TEST_congress`, // Placeholder: update to use file name from client args
     }
     const datasetArgs = assignDatasets(mapDatasetFileNames(clientArgs.datasets)); // Map dataset back to file names & assign to arg props
     delete clientArgs.datasets; // Remove datasets prop from client args, as it is now assigned in datasetArgs

@@ -12,32 +12,43 @@ function runScoreScript(args) {
     // Manually defined paths for testing
     const rdapyPath = process.env.RDAPY_PATH || path.resolve(__dirname, '../../rdapy');
     const venvPath = process.env.VENV_PATH;
+    const OUTPUT_PATH = process.env.OUTPUT_PATH || '../../output/';
 
     const electionString = args.elections.join(',');
+
+    // Constructed strings for options command args based on user input: input || ''
+    const commandStrings = {
+      precomputed: args.precomputed ? `--precomputed ${args.precomputed}` : '',
+      mode: `--mode all`, //to be made dynamic in future
+      census: args.census ? `--census ${args.census}` || '',
+      vap: args.vap ? `--vap ${args.vap}` || '',
+      cvap: args.cvap ? `--cvap ${args.cvap}` || '',
+      elections: args.elections.length ? `--elections ${electionString}` : '',
+    }
 
     return new Promise((resolve, reject) => {
     // Command to run in the shell
     const command = `
       cd ${rdapyPath} && 
       source ${venvPath}/bin/activate && 
-      scripts/score/SCORE.sh \\
-      --state ${args.state} \\
-      --plan-type ${args.planType} \\
-      --geojson ${args.geojson} \\
-      --graph ${args.graph} \\
-      --precomputed ${args.precomputed} \\
-      --plans ${args.plans} \\
-      --mode all \
-      --census ${args.census} \
-      --vap ${args.vap} \
-      --cvap ${args.cvap} \
-      --elections ${electionString} \
-      --scores ${args.scores} \\
-      --by-district ${args.byDistrict}
+      scripts/score/SCORE.sh \
+      --state ${args.state} \
+      --plan-type ${args.planType} \
+      --geojson ${args.geojson} \
+      --graph ${args.graph} \
+      ${commandStrings.precomputed}
+      --plans ${args.plans} \
+      ${commandStrings.mode}
+      ${commandStrings.census}
+      ${commandStrings.vap}
+      ${commandStrings.cvap}
+      ${commandStrings.elections}
+      --scores ${args.output}_scores.csv \
+      --by-district ${args.output}_by-district.jsonl
     `;
 
     // Spawn a shell to run the command
-    const childProcess = spawn('/bin/bash', ['-c', command]);
+   e
     
     let stdoutData = '';
     let stderrData = '';
@@ -62,8 +73,8 @@ function runScoreScript(args) {
         resolve({
           stdout: stdoutData,
           resultFiles: {
-            scores: path.join(rdapyPath, 'temp/TEST_congress_scores.csv'),
-            byDistrict: path.join(rdapyPath, 'temp/TEST_congress_by-district.jsonl')
+            scores: path.join(OUTPUT_PATH, `${args.output}_scores.csv`),
+            byDistrict: path.join(OUTPUT_PATH, `${args.output}_by-district.jsonl`)
           }
         });
       } else {

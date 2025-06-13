@@ -65,16 +65,32 @@ const ButtonContainer = styled('div')(({ theme }) => ({
 function UploadView({ uploadFile, fetchScorecard, uploadedFile, uploadMessage, setCurrView, fetchSync, analyticsType, setAnalyticsType }) {
   const [datasets, setDatasets] = useState([]); // State to manage all available datasets for chosen state
   const [filteredDatasets, setFilteredDatasets] = useState(datasets); // State to manage filtered datasets based on user selections
-  const [plans, setPlans] = useState(getPlans()); // State to manage available plans for volume scoring
+  const [plans, setPlans] = useState([]); // State to manage available plans for volume scoring
   const [volumeArgs, setVolumeArgs] = useState({
     state: null,
     planType: null,
     datasets: [],
     plans: null,
-    scores: null,
-    byDistrict: null,
+    output: null,
   }); // State to manage volume scoring arguments
 
+  // Effect to fetch plans when component mounts
+  useEffect(() => {
+    console.log('Fetching plans on mount...');
+    // Get available plans for volume scoring
+    async function getPlans() {
+      try {
+        const response = await fetch(`/volume/plans`);
+        const newPlans = await response.json();
+        setPlans(newPlans); // Update available plans state
+        console.log('Plans fetched:', newPlans); // Debugging log
+      } catch (error) {
+        console.error('Error fetching plans:', error);
+      }
+    }
+    getPlans(); // Fetch available plans for volume scoring
+  }, []);
+  
   // Effect to fetch datasets when state prop of volumeArgs changes
   useEffect(() => {
     async function fetchDatasets() {
@@ -123,18 +139,6 @@ function UploadView({ uploadFile, fetchScorecard, uploadedFile, uploadMessage, s
     
   // Helpers
 
-  // Get available plans for volume scoring
-  async function getPlans() {
-    try {
-      const response = await fetch(`/volume/plans`);
-      const newPlans = await response.json();
-      setPlans(newPlans); // Update available plans state
-      console.log('Plans fetched:', newPlans); // Debugging log
-    } catch (error) {
-      console.error('Error fetching plans:', error);
-    }
-  }
-
   // Set plans input for volume scoring
   function setPlansInput(value) {
     const prevArgs = volumeArgs;
@@ -162,7 +166,11 @@ function UploadView({ uploadFile, fetchScorecard, uploadedFile, uploadMessage, s
 
   // Run volume scoring
   async function fetchVolumeScore() {
-    // Placeholde: add arg validation for reqd fields
+    // Placeholder: add arg validation for reqd fields: state, plans (tba planType, output paths/names))
+    if (!volumeArgs.state || !volumeArgs.plans) {
+      console.error('Please select a state and plans for volume scoring.');
+      return;
+    }
     try {
     const response = await fetch('/volume/score', {
       method: 'POST',
