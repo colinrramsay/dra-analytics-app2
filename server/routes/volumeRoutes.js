@@ -77,8 +77,8 @@ router.post('/score', (req, res) => {
         planType: 'congress',
         plans: `${PLANS_PATH}${req.body.plans}`, // Path to plans file, passed from client + path prefix
         output: `${OUTPUT_PATH}TEST`, // Placeholder: update to use file name from client args
-        geojson: `${process.env.GEOJSON_PATH}${req.body.state}_2020_VD_tabblock.vtd.datasets.geojson`, // computed server side from state
-        graph: `${process.env.GRAPH_PATH}${req.body.state}_2020_graph.json`, // computed server side from state
+        geojson: `${GEOJSON_PATH}_${req.body.state}_2020_VD_tabblock.vtd.datasets.geojson`, // computed server side from state
+        graph: `${GRAPH_PATH}${req.body.state}_2020_graph.json`, // computed server side from state
         precomputed: precomputed, // Path to precomputed file, if exists
     }
     delete args.datasets; // Remove datasets prop from args, as it is now assigned in datasetArgs

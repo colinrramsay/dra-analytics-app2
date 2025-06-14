@@ -32,6 +32,7 @@ const checkFileExists = function(filePath) {
         return false;
     }
 }
+exports.checkFileExists = checkFileExists;
 
 // Read & parse a GeoJSON as JSON, download from cloud if not found locally
 exports.readGeoJSON = function(filePath) {
