@@ -8,13 +8,16 @@ const express = require('express');
 const router = express.Router();
 const fs = require('fs');
 const path = require('path');
-const { getFilePath, getDatasetsFromGeoJson, readGeoJSON, mapDatasetNames, mapDatasetFileNames, assignDatasets} = require('../utils/utils');
+const { getFilePath, getDatasetsFromGeoJson, readGeoJSON, mapDatasetNames, mapDatasetFileNames, assignDatasets, checkFileExists} = require('../utils/utils');
 const { runScoreScript } = require('../utils/rdapy'); // Import the function to run the scoring script
 
 //Load environment variables
 require('dotenv').config();
 const OUTPUT_PATH = path.join(__dirname, process.env.OUTPUT_PATH) || path.join(__dirname, '../../output/'); // Default output path if not set in .env
 const PLANS_PATH = path.join(__dirname, process.env.PLANS_PATH) || path.join(__dirname, '../../plans/'); // Default input path if not set in .env
+const GEOJSON_PATH = path.join(__dirname, process.env.GEOJSON_PATH) || path.join(__dirname, '../../sample-data/private-data/');
+const GRAPH_PATH = path.join(__dirname, process.env.GRAPH_PATH) || path.join(__dirname, '../../sample-data/private-data/');
+const PRECOMPUTED_PATH = path.join(__dirname, process.env.PRECOMPUTED_PATH) || path.join(__dirname, '../rdapy/testdata/examples/');
 
 //POST to /sync
 //Download requested geojson files from cloud, save locally
@@ -60,24 +63,26 @@ router.get('/datasets/:state', (req, res) => {
 //Run volume scoring with user inputted parameters
 router.post('/score', (req, res) => {
     // PLACEHOLDER: Manually set certain args for testing until functionality is implemented in client
-    const clientArgs = {
-        ...req.body, // Spread client args from request body
-        // state: 'NC',
-        planType: 'congress',
-        plans: `${PLANS_PATH}NC_congress_plans.tagged.jsonl`,
-        // datasets: ['V_20_VAP', 'V_20_CVAP', 'E_16_SEN', 'E_20_AG', 'T_20_CENS'], // Example datasets
-        output: `${OUTPUT_PATH}TEST_congress`, // Placeholder: update to use file name from client args
-    }
-    const datasetArgs = assignDatasets(mapDatasetFileNames(clientArgs.datasets)); // Map dataset back to file names & assign to arg props
-    delete clientArgs.datasets; // Remove datasets prop from client args, as it is now assigned in datasetArgs
+    // Map dataset back to file names & assign to arg props
+    const datasetArgs = assignDatasets(mapDatasetFileNames(req.body.datasets));
+    
+    // Validate if precomputed file exists
+    const precomputedPath = `${PRECOMPUTED_PATH}${req.body.state}_congress_precomputed.json`;
+    const precomputed = checkFileExists(precomputedPath) ? precomputedPath : null
+
     // Add server-side computed prop & assigned datasets
     const args = {
-        ...clientArgs, // Spread client args
+        ...req.body, // Spread args from client
         ...datasetArgs, // Spread dataset args
-        geojson: getFilePath('geojson', clientArgs.state), // computed server side from state
-        graph: getFilePath('graph', clientArgs.state), // computed server side from state
-        precomputed: getFilePath('precomputed', clientArgs.state), // computed server side from state
+        planType: 'congress',
+        plans: `${PLANS_PATH}${req.body.plans}`, // Path to plans file, passed from client + path prefix
+        output: `${OUTPUT_PATH}TEST`, // Placeholder: update to use file name from client args
+        geojson: `${process.env.GEOJSON_PATH}${req.body.state}_2020_VD_tabblock.vtd.datasets.geojson`, // computed server side from state
+        graph: `${process.env.GRAPH_PATH}${req.body.state}_2020_graph.json`, // computed server side from state
+        precomputed: precomputed, // Path to precomputed file, if exists
     }
+    delete args.datasets; // Remove datasets prop from args, as it is now assigned in datasetArgs
+
     // Spawn child process to run python script for scoring
     console.log('Scoring with parameters:', args);
     runScoreScript(args)

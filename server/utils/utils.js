@@ -161,38 +161,3 @@ exports.assignDatasets = function(datasets) {
     })
     return datasetArgs;
 }
-
-/*
-Categories
-T = Total Population
-V = Voting Age Population
-E = Elections
-S = Shapes – I added this in the data map. It’s implicit (no key) in the GeoJSON.
-
-Demographic Datasets (Persons)
-CENS = Total Population from the decennial census
-CENS_ADJ = Total Population from the decennial census, Adjusted for incarcerated persons
-ACS = Total Population from the 5-year American Community Survey estimate
-VAP = Voting Age Population with Race Combination categories from the decennial census
-VAP_NH = Voting Age Population with Non-Hispanic Race Alone categories from the decennial census
-CVAP = Citizen Voting Age Population based on the 5-year American Community Survey estimate
-
-Election Datasets
-COMP = DRA's Composite
-PRES = President
-SEN = U.S. Senator
-GOV = Governor
-AG = Attorney General
-AUD = Auditor
-LTG = Lieutenant Governor
-SOS = Secretary of State
-TREAS = Treasurer
-CMPTR = Comptroller
-SC* = State Supreme Court (with seat designation)
-CONG = U.S. Congress
-
-Modifiers
-ROFF = Runoff election
-SPEC = Special election
-SPECROFF = Special Runoff election
-*/

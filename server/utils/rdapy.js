@@ -12,7 +12,6 @@ function runScoreScript(args) {
     // Manually defined paths for testing
     const rdapyPath = process.env.RDAPY_PATH || path.resolve(__dirname, '../../rdapy');
     const venvPath = process.env.VENV_PATH;
-    const OUTPUT_PATH = process.env.OUTPUT_PATH || '../../output/';
 
     const electionString = args.elections.join(',');
 
@@ -20,9 +19,9 @@ function runScoreScript(args) {
     const commandStrings = {
       precomputed: args.precomputed ? `--precomputed ${args.precomputed}` : '',
       mode: `--mode all`, //to be made dynamic in future
-      census: args.census ? `--census ${args.census}` || '',
-      vap: args.vap ? `--vap ${args.vap}` || '',
-      cvap: args.cvap ? `--cvap ${args.cvap}` || '',
+      census: args.census ? `--census ${args.census}` : '',
+      vap: args.vap ? `--vap ${args.vap}` : '',
+      cvap: args.cvap ? `--cvap ${args.cvap}` : '',
       elections: args.elections.length ? `--elections ${electionString}` : '',
     }
 
@@ -36,20 +35,21 @@ function runScoreScript(args) {
       --plan-type ${args.planType} \
       --geojson ${args.geojson} \
       --graph ${args.graph} \
-      ${commandStrings.precomputed}
+      ${commandStrings.precomputed} \
       --plans ${args.plans} \
-      ${commandStrings.mode}
-      ${commandStrings.census}
-      ${commandStrings.vap}
-      ${commandStrings.cvap}
-      ${commandStrings.elections}
+      ${commandStrings.mode} \
+      ${commandStrings.census} \
+      ${commandStrings.vap} \
+      ${commandStrings.cvap} \
+      ${commandStrings.elections} \
       --scores ${args.output}_scores.csv \
       --by-district ${args.output}_by-district.jsonl
     `;
 
     // Spawn a shell to run the command
-   e
-    
+    console.log(`Running command: ${command}`);
+    const childProcess = spawn('/bin/bash', ['-c', command]);
+
     let stdoutData = '';
     let stderrData = '';
 
@@ -73,8 +73,8 @@ function runScoreScript(args) {
         resolve({
           stdout: stdoutData,
           resultFiles: {
-            scores: path.join(OUTPUT_PATH, `${args.output}_scores.csv`),
-            byDistrict: path.join(OUTPUT_PATH, `${args.output}_by-district.jsonl`)
+            scores: `${args.output}_scores.csv`,
+            byDistrict: `${args.output}_by-district.jsonl`
           }
         });
       } else {
