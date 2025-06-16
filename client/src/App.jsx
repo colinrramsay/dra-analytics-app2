@@ -19,7 +19,7 @@ function App() {
   //State
   const [uploadedFile, setUploadedFile] = useState(null); //holds currently uploaded file
   const [scorecard, setScorecard] = useState(null); //holds result of profile scoring
-  const [currView, setCurrView] = useState('UploadView'); //holds current view - UploadView || AnalyticsViewSingle
+  const [currView, setCurrView] = useState('UploadView'); //holds current view - UploadView || AnalyticsViewSingle || ServerShutdownView
   const [uploadMessage, setUploadMessage] = useState(null); //holds upload view message
   const [analyticsType, setAnalyticsType] = useState('single'); // State to manage analytics type - 'single || 'volume'
 

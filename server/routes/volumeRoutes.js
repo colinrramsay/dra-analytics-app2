@@ -8,7 +8,14 @@ const express = require('express');
 const router = express.Router();
 const fs = require('fs');
 const path = require('path');
-const { getFilePath, getDatasetsFromGeoJson, readGeoJSON, mapDatasetNames, mapDatasetFileNames, assignDatasets, checkFileExists} = require('../utils/utils');
+const { getFilePath, 
+        getDatasetsFromGeoJson, 
+        readGeoJSON, 
+        mapDatasetNames, 
+        mapDatasetFileNames, 
+        assignDatasets, 
+        checkFileExists, 
+        getStatefromJsonl} = require('../utils/utils');
 const { runScoreScript } = require('../utils/rdapy'); // Import the function to run the scoring script
 
 //Load environment variables
@@ -48,23 +55,26 @@ router.get('/plans', (req, res) => {
 })
 
 //GET to /datasets
-router.get('/datasets/:state', (req, res) => {
+router.get('/datasets/:plans', async (req, res) => {
+    const state = await getStatefromJsonl(`${PLANS_PATH}${req.params.plans}`)
+
+    // Check if state is valid
+    if (!state) return res.status(400).json({ error: 'Invalid plan file or state not found' });
+
     console.log('Fetching datasets...');
-    const filePath = getFilePath('geojson', req.params.state); // Get file path for state URL param on request
+    const filePath = getFilePath('geojson', state); // Get file path for state URL param on request
     const geoJson = readGeoJSON(filePath); // Read and parse the GeoJSON file
     // Placeholder: add logic check, if !geoJson, return error response (couldn't find/read geojson)
     const datasets = getDatasetsFromGeoJson(geoJson); //Get list of datasets from geojson
     console.log(datasets);
     const mappedDatasets = mapDatasetNames(datasets); // Map dataset names to user-friendly names
-    res.json(mappedDatasets); // Return array of datasets with user-friendly names
+    res.json({ datasets: mappedDatasets, state: state}); // Return array of datasets with user-friendly names
 })
 
 //POST to /score
 //Run volume scoring with user inputted parameters
 router.post('/score', (req, res) => {
     // PLACEHOLDER: Manually set certain args for testing until functionality is implemented in client
-    // Map dataset back to file names & assign to arg props
-    const datasetArgs = assignDatasets(mapDatasetFileNames(req.body.datasets));
     
     // Validate if precomputed file exists
     const precomputedPath = `${PRECOMPUTED_PATH}${req.body.state}_congress_precomputed.json`;
@@ -73,7 +83,11 @@ router.post('/score', (req, res) => {
     // Add server-side computed prop & assigned datasets
     const args = {
         ...req.body, // Spread args from client
-        ...datasetArgs, // Spread dataset args
+        //datasets mapped back to file names
+        elections: mapDatasetFileNames(req.body.elections),
+        census: mapDatasetFileNames(req.body.census),
+        vap: mapDatasetFileNames(req.body.vap),
+        cvap: mapDatasetFileNames(req.body.cvap),
         planType: 'congress',
         plans: `${PLANS_PATH}${req.body.plans}`, // Path to plans file, passed from client + path prefix
         output: `${OUTPUT_PATH}TEST`, // Placeholder: update to use file name from client args
@@ -81,6 +95,7 @@ router.post('/score', (req, res) => {
         graph: `${GRAPH_PATH}${req.body.state}_2020_graph.json`, // computed server side from state
         precomputed: precomputed, // Path to precomputed file, if exists
     }
+
     delete args.datasets; // Remove datasets prop from args, as it is now assigned in datasetArgs
 
     // Spawn child process to run python script for scoring

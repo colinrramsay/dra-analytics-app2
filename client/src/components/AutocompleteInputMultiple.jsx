@@ -9,6 +9,7 @@ export default function AutocompleteInputMultiple({ label, options, value, setVa
       options={options}
       getOptionLabel={(option) => option}
       defaultValue={[]}
+      value={value}
       onChange={(event, newValue) => {
         setValue(newValue);
     }}

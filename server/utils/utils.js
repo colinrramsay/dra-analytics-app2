@@ -1,5 +1,8 @@
 const fs = require('fs');
 const path = require('path');
+const readline = require('readline');
+
+require('dotenv').config(); // Load environment variables from .env file
 
 // State abbreviation geojson file name
 // Assumes stateCode is a valid two-letter state code
@@ -13,7 +16,7 @@ exports.getStateAbbFileName = function(stateCode) {
 exports.getFilePath = function(type, stateCode) {
     if (type === 'geojson') {
         const fileName = `_${stateCode}_2020_VD_tabblock.vtd.datasets.geojson`;
-        return `../../sample-data/private-data/${fileName}`;
+        return `${process.env.GEOJSON_PATH}${fileName}`;
     } else if (type === 'graph') {
         const fileName = `${stateCode}_2020_graph.json`;
         return `../../sample-data/private-data/${fileName}`;
@@ -100,7 +103,10 @@ exports.mapDatasetNames = function(datasets) {
 
 // Map dataset names to their original file names
 exports.mapDatasetFileNames = function(datasets) {
+    if (!datasets) return null; // If no datasets provided, return null
+    
     const fileMap = {
+        'All Elections': '__all__',
         'Total Population': 'T',
         'Voting Age': 'V',
         'Elections': 'E',
@@ -127,18 +133,23 @@ exports.mapDatasetFileNames = function(datasets) {
         'Special Election': 'SPEC',
         'Special Runoff Election': 'SPECROFF' 
     };
-    // Map dataset names to their original file names
-    return datasets.map(dataset => {
+    // Helper to map dataset names to their original file names
+    const mapper = (dataset) => {
         const params = dataset.split(' - ');
         const fileName = params.map(param => {
             if (param.startsWith('State Supreme Court')) {
                 // Handle State Supreme Court with seat designation
-                return `SC${param.slice(21)}`; // Extract seat designation
+                return `SC${param.slice(-1)}`; // Extract seat designation
             }
             return fileMap[param] || param; // Map to file name or keep original if not found
         }).join('_');
         return fileName;
-    });
+    }
+
+    if (typeof datasets === 'string') return mapper(datasets); // If single dataset string, return mapped file name
+
+    //else return mapped array of dataset file names
+    return datasets.map(mapper);
 }
 
 // Assign datasets to arg props: census || vap || cvap || elections
@@ -161,4 +172,101 @@ exports.assignDatasets = function(datasets) {
         }
     })
     return datasetArgs;
+}
+
+// Extract state from jsonl
+// Accepts file path to jsonl file
+exports.getStatefromJsonl = async function(file) {
+    // Create a read stream for the file
+    const fileStream = fs.createReadStream(file);
+    const rl = readline.createInterface({
+      input: fileStream,
+      crlfDelay: Infinity
+    });
+
+    // FIPS code to state abbreviation mapping
+    const fipsDic = {
+        "01": "AL",
+        "02": "AK",
+        "04": "AZ",
+        "05": "AR",
+        "06": "CA",
+        "08": "CO",
+        "09": "CT",
+        "10": "DE",
+        "12": "FL",
+        "13": "GA",
+        "15": "HI",
+        "16": "ID",
+        "17": "IL",
+        "18": "IN",
+        "19": "IA",
+        "20": "KS",
+        "21": "KY",
+        "22": "LA",
+        "23": "ME",
+        "24": "MD",
+        "25": "MA",
+        "26": "MI",
+        "27": "MN",
+        "28": "MS",
+        "29": "MO",
+        "30": "MT",
+        "31": "NE",
+        "32": "NV",
+        "33": "NH",
+        "34": "NJ",
+        "35": "NM",
+        "36": "NY",
+        "37": "NC",
+        "38": "ND",
+        "39": "OH",
+        "40": "OK",
+        "41": "OR",
+        "42": "PA",
+        "44": "RI",
+        "45": "SC",
+        "46": "SD",
+        "47": "TN",
+        "48": "TX",
+        "49": "UT",
+        "50": "VT",
+        "51": "VA",
+        "53": "WA",
+        "54": "WV",
+        "55": "WI",
+        "56": "WY",
+        "11": "DC",
+        "72": "PR"
+    }
+
+    let lineCount = 0; // Track current line so we can limit to first 2 lines being read
+
+    // Process each line
+    for await (const line of rl) {
+        if (lineCount >= 2) return null; // Limit to first 2 lines - if state not found already, jsonl is formatted incorrectly
+        if (line.trim() !== '') {
+            const jsonObject = JSON.parse(line);
+            
+            // Handle tagged jsonl
+            if (jsonObject.state) return jsonObject.state; // Return state if found
+            // Fallback for tagged jsonl, retrieve from first plan json at second line
+            else if (jsonObject.plan) {
+                for (const key in jsonObject.plan) {
+                    const fips = key.substring(0, 2); // Extract FIPS codes from first two characters
+                    if (fipsDic[fips]) return fipsDic[fips]; // Return state abbreviation if FIPS code matches
+                    break; // Break after first key to avoid multiple returns
+                }
+            }
+            // Handle untagged jsonl
+            else {
+                for (const key in jsonObject) {
+                    const fips = key.substring(0, 2); // Extract FIPS codes from first two characters
+                    if (fipsDic[fips]) return fipsDic[fips]; // Return state abbreviation if FIPS code matches
+                    break; // Break after first key to avoid multiple returns
+                }
+            }
+            lineCount++;
+        }
+    }
 }
