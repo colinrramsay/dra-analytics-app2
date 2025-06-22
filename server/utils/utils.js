@@ -195,7 +195,7 @@ exports.getStatefromJsonl = async function(file) {
     for await (const line of rl) {
         if (lineCount >= 2) {
             for (currType in districtsDict[state]) {
-                if (districtsDict[state][currType] = numDistricts) planType = currType; // Check if numDistricts matches any plan type in districtsDict
+                if (districtsDict[state][currType] === numDistricts) planType = currType; // Check if numDistricts matches any plan type in districtsDict
             }
             return planType && numDistricts ? [state, planType] : null; // Return state and planType if both are found, else invalid format
         }
