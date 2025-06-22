@@ -56,19 +56,21 @@ router.get('/plans', (req, res) => {
 
 //GET to /datasets
 router.get('/datasets/:plans', async (req, res) => {
-    const state = await getStatefromJsonl(`${PLANS_PATH}${req.params.plans}`)
+    const result = await getStatefromJsonl(`${PLANS_PATH}${req.params.plans}`) // returns as [state, planType] if valid, else null
 
-    // Check if state is valid
-    if (!state) return res.status(400).json({ error: 'Invalid plan file or state not found' });
-
+    // Check if state & planType is valid
+    if (!result) return res.status(400).json({ error: 'Invalid plan file or state not found' });
+    const state = result[0]; // Extract state from result
+    const planType = result[1]; // Extract planType from result
+    console.log(`State: ${state}, Plan Type: ${planType}`);
     console.log('Fetching datasets...');
-    const filePath = getFilePath('geojson', state); // Get file path for state URL param on request
+    const filePath = getFilePath('geojson', result[0]); // Get file path for state URL param on request
     const geoJson = readGeoJSON(filePath); // Read and parse the GeoJSON file
     // Placeholder: add logic check, if !geoJson, return error response (couldn't find/read geojson)
     const datasets = getDatasetsFromGeoJson(geoJson); //Get list of datasets from geojson
     console.log(datasets);
     const mappedDatasets = mapDatasetNames(datasets); // Map dataset names to user-friendly names
-    res.json({ datasets: mappedDatasets, state: state}); // Return array of datasets with user-friendly names
+    res.json({ datasets: mappedDatasets, state: state, planType: planType }); // Return array of datasets with user-friendly names, state & planType
 })
 
 //POST to /score
@@ -88,7 +90,6 @@ router.post('/score', (req, res) => {
         census: mapDatasetFileNames(req.body.census),
         vap: mapDatasetFileNames(req.body.vap),
         cvap: mapDatasetFileNames(req.body.cvap),
-        planType: 'congress',
         plans: `${PLANS_PATH}${req.body.plans}`, // Path to plans file, passed from client + path prefix
         output: `${OUTPUT_PATH}TEST`, // Placeholder: update to use file name from client args
         geojson: `${GEOJSON_PATH}_${req.body.state}_2020_VD_tabblock.vtd.datasets.geojson`, // computed server side from state

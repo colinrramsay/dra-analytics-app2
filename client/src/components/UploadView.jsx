@@ -120,6 +120,8 @@ function UploadView({ uploadFile, fetchScorecard, uploadedFile, uploadMessage, s
           console.log('Sorted datasets:', sorted); // Debugging log
           setStateInput(resObj.state); // Set state input based on fetched data
           console.log('State set to:', resObj.state); // Debugging log
+          setPlanTypeInput(resObj.planType); // Set plan type input based on fetched data
+          console.log('Plan type set to:', resObj.planType); // Debugging log
         } catch (error) {
           console.error('Error fetching state & datasets:', error);
         }
@@ -178,6 +180,14 @@ function UploadView({ uploadFile, fetchScorecard, uploadedFile, uploadMessage, s
     setVolumeArgs({
       ...prevArgs,
       state: value});
+  }
+
+  // Set planType input for volume scoring
+  function setPlanTypeInput(value) {
+    const prevArgs = volumeArgs;
+    setVolumeArgs({
+      ...prevArgs,
+      planType: value});
   }
 
   // Set datasets input for volume scoring

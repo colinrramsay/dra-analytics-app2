@@ -1,6 +1,8 @@
 const fs = require('fs');
 const path = require('path');
 const readline = require('readline');
+const { fipsDict, stateCodes } = require('./fips-dict'); // Import FIPS dictionary and state codes set
+const districtsDict = require('./districts-dict'); // Import districts dictionary, planType : count
 
 require('dotenv').config(); // Load environment variables from .env file
 
@@ -174,7 +176,7 @@ exports.assignDatasets = function(datasets) {
     return datasetArgs;
 }
 
-// Extract state from jsonl
+// Extract state & plan type from jsonl
 // Accepts file path to jsonl file
 exports.getStatefromJsonl = async function(file) {
     // Create a read stream for the file
@@ -184,86 +186,44 @@ exports.getStatefromJsonl = async function(file) {
       crlfDelay: Infinity
     });
 
-    // FIPS code to state abbreviation mapping
-    const fipsDic = {
-        "01": "AL",
-        "02": "AK",
-        "04": "AZ",
-        "05": "AR",
-        "06": "CA",
-        "08": "CO",
-        "09": "CT",
-        "10": "DE",
-        "12": "FL",
-        "13": "GA",
-        "15": "HI",
-        "16": "ID",
-        "17": "IL",
-        "18": "IN",
-        "19": "IA",
-        "20": "KS",
-        "21": "KY",
-        "22": "LA",
-        "23": "ME",
-        "24": "MD",
-        "25": "MA",
-        "26": "MI",
-        "27": "MN",
-        "28": "MS",
-        "29": "MO",
-        "30": "MT",
-        "31": "NE",
-        "32": "NV",
-        "33": "NH",
-        "34": "NJ",
-        "35": "NM",
-        "36": "NY",
-        "37": "NC",
-        "38": "ND",
-        "39": "OH",
-        "40": "OK",
-        "41": "OR",
-        "42": "PA",
-        "44": "RI",
-        "45": "SC",
-        "46": "SD",
-        "47": "TN",
-        "48": "TX",
-        "49": "UT",
-        "50": "VT",
-        "51": "VA",
-        "53": "WA",
-        "54": "WV",
-        "55": "WI",
-        "56": "WY",
-        "11": "DC",
-        "72": "PR"
-    }
-
     let lineCount = 0; // Track current line so we can limit to first 2 lines being read
+    let state = null; // Initialize state variable
+    let numDistricts = 0; // Track number of districts in the plan based on highest district number found
+    let planType = null; // Initialize planType variable
 
     // Process each line
     for await (const line of rl) {
-        if (lineCount >= 2) return null; // Limit to first 2 lines - if state not found already, jsonl is formatted incorrectly
+        if (lineCount >= 2) {
+            for (currType in districtsDict[state]) {
+                if (districtsDict[state][currType] = numDistricts) planType = currType; // Check if numDistricts matches any plan type in districtsDict
+            }
+            return planType && numDistricts ? [state, planType] : null; // Return state and planType if both are found, else invalid format
+        }
         if (line.trim() !== '') {
             const jsonObject = JSON.parse(line);
             
             // Handle tagged jsonl
-            if (jsonObject.state) return jsonObject.state; // Return state if found
+            if (jsonObject.state && stateCodes.has(jsonObject.state)) state = jsonObject.state; // set state if property is found & valid
             // Fallback for tagged jsonl, retrieve from first plan json at second line
             else if (jsonObject.plan) {
                 for (const key in jsonObject.plan) {
-                    const fips = key.substring(0, 2); // Extract FIPS codes from first two characters
-                    if (fipsDic[fips]) return fipsDic[fips]; // Return state abbreviation if FIPS code matches
-                    break; // Break after first key to avoid multiple returns
+                    if (!state) {
+                        const fips = key.substring(0, 2); // Extract FIPS codes from first two characters
+                        if (fipsDict[fips]) state = fipsDict[fips]; // Set state abbreviation if FIPS code matches
+                    }
+                    // Update numDistricts if current precint district assignment is greater than current max
+                    if (jsonObject.plan[key] > numDistricts) numDistricts = jsonObject.plan[key];
                 }
             }
             // Handle untagged jsonl
             else {
                 for (const key in jsonObject) {
-                    const fips = key.substring(0, 2); // Extract FIPS codes from first two characters
-                    if (fipsDic[fips]) return fipsDic[fips]; // Return state abbreviation if FIPS code matches
-                    break; // Break after first key to avoid multiple returns
+                    if (!state) {
+                        const fips = key.substring(0, 2); // Extract FIPS codes from first two characters
+                        if (fipsDict[fips]) state = fipsDict[fips]; // Return state abbreviation if FIPS code matches
+                    }
+                    // Update numDistricts if current precint district assignment is greater than current max
+                    if (jsonObject[key] > numDistricts) numDistricts = jsonObject[key];
                 }
             }
             lineCount++;
