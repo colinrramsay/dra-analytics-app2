@@ -118,9 +118,8 @@ function UploadView({ uploadFile, fetchScorecard, uploadedFile, uploadMessage, s
           sorted.elections.unshift('All Elections')
           setSortedDatasets(sorted); // Update sorted datasets state
           console.log('Sorted datasets:', sorted); // Debugging log
-          setStateInput(resObj.state); // Set state input based on fetched data
+          setStateAndPlanTypeInput(resObj); // Set state input based on fetched data
           console.log('State set to:', resObj.state); // Debugging log
-          setPlanTypeInput(resObj.planType); // Set plan type input based on fetched data
           console.log('Plan type set to:', resObj.planType); // Debugging log
         } catch (error) {
           console.error('Error fetching state & datasets:', error);
@@ -175,19 +174,13 @@ function UploadView({ uploadFile, fetchScorecard, uploadedFile, uploadMessage, s
   }
 
   // Set state input for volume scoring
-  function setStateInput(value) {
+  function setStateAndPlanTypeInput(value) {
     const prevArgs = volumeArgs;
     setVolumeArgs({
       ...prevArgs,
-      state: value});
-  }
-
-  // Set planType input for volume scoring
-  function setPlanTypeInput(value) {
-    const prevArgs = volumeArgs;
-    setVolumeArgs({
-      ...prevArgs,
-      planType: value});
+      state: value.state,
+      planType: value.planType
+    });
   }
 
   // Set datasets input for volume scoring
