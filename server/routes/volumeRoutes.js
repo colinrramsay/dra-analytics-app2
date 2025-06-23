@@ -103,8 +103,13 @@ router.post('/score', (req, res) => {
     console.log('Scoring with parameters:', args);
     runScoreScript(args)
         .then((result) => {
-            res.json(result.resultFiles); // return path to resulting score files
-            console.log('Scoring completed successfully');
+            // Check if the script ran successfully
+            if (result.stdout.trim() === 'Done!') {
+                res.json(result.resultFiles); // return path to resulting score files
+                console.log('Scoring completed successfully');
+            } else {
+                res.json({ error: 'Scoring failed, see terminal for details.', details: result.stdout });
+            }
         })
         .catch((error) => {
             res.status(500).json(error.message || error.toString());

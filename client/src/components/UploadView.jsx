@@ -253,11 +253,16 @@ function UploadView({ uploadFile, fetchScorecard, uploadedFile, uploadMessage, s
       });
       const res = await response.json();
       console.log('Volume scoring response:', res);
+      // Check if scoring was successful
+      const outputMessage = !res.error ? 
+        `Volume scoring completed successfully. Output saved as ${res.scores} and ${res.byDistrict}.` :
+        res.error;
       setDialog({
         ...dialog,
         state: true,
         title: 'Volume Scoring Complete',
-        description: `Volume scoring completed successfully. Output saved as ${res.scores} and ${res.byDistrict}.`,
+        description: outputMessage,
+        //description: `Volume scoring completed successfully. Output saved as ${res.scores} and ${res.byDistrict}.`,
         button: true,
         buttonText: 'Close'
       })
