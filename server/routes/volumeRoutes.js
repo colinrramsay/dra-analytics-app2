@@ -76,7 +76,9 @@ router.get('/datasets/:plans', async (req, res) => {
 //POST to /score
 //Run volume scoring with user inputted parameters
 router.post('/score', (req, res) => {
-    // PLACEHOLDER: Manually set certain args for testing until functionality is implemented in client
+    // Set file name if given, else use default
+    const defaultName = `${req.body.plans.slice(0, -6)}` // Plans file name without .jsonl extension
+    const fileName = req.body.fileName !== '' ? req.body.fileName : defaultName;
     
     // Validate if precomputed file exists
     const precomputedPath = `${PRECOMPUTED_PATH}${req.body.state}_congress_precomputed.json`;
@@ -91,7 +93,7 @@ router.post('/score', (req, res) => {
         vap: mapDatasetFileNames(req.body.vap),
         cvap: mapDatasetFileNames(req.body.cvap),
         plans: `${PLANS_PATH}${req.body.plans}`, // Path to plans file, passed from client + path prefix
-        output: `${OUTPUT_PATH}TEST`, // Placeholder: update to use file name from client args
+        output: `${OUTPUT_PATH}${fileName}`, // Placeholder: update to use file name from client args
         geojson: `${GEOJSON_PATH}_${req.body.state}_2020_VD_tabblock.vtd.datasets.geojson`, // computed server side from state
         graph: `${GRAPH_PATH}${req.body.state}_2020_graph.json`, // computed server side from state
         precomputed: precomputed, // Path to precomputed file, if exists

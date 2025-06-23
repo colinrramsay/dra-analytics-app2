@@ -18,6 +18,7 @@ import Select from './Select';
 import AutocompleteInput from './AutocompleteInput';
 import AutocompleteInputMultiple from './AutocompleteInputMultiple';
 import AlertDialog from './AlertDialog';
+import TextField from '@mui/material/TextField';
 
 //Constants
 const STATE_CODES = ['AL', 'AK', 'AZ', 'AR', 'CA', 'CO', 'CT', 'DE', 'FL', 'GA', 'HI', 'ID', 'IL', 'IN', 'IA', 'KS', 'KY', 'LA', 'ME', 'MD', 'MA', 'MI', 'MN', 'MS', 'MO', 'MT', 'NE', 'NV', 'NH', 'NJ', 'NM', 'NY', 'NC', 'ND', 'OH', 'OK', 'OR', 'PA', 'RI', 'SC', 'SD', 'TN', 'TX', 'UT', 'VT', 'VA', 'WA', 'WV', 'WI', 'WY'];
@@ -78,6 +79,7 @@ function UploadView({ uploadFile, fetchScorecard, uploadedFile, uploadMessage, s
     elections: [],
     plans: null,
     output: null,
+    fileName: '',
   }); // State to manage volume scoring arguments
   const [dialog, setDialog] = useState({
     state: false, // Dialog visibility state
@@ -180,6 +182,15 @@ function UploadView({ uploadFile, fetchScorecard, uploadedFile, uploadMessage, s
       ...prevArgs,
       state: value.state,
       planType: value.planType
+    });
+  }
+
+  // Set file name input for volume scoring
+  function setFileNameInput(value) {
+    const prevArgs = volumeArgs;
+    setVolumeArgs({
+      ...prevArgs,
+      fileName: value
     });
   }
 
@@ -362,6 +373,21 @@ function UploadView({ uploadFile, fetchScorecard, uploadedFile, uploadMessage, s
               value={volumeArgs.cvap} 
               setValue={setArg.cvap}
               label='CVAP' />
+            <TextField 
+              id="output-file-name"
+              label="Output File Name"
+              variant="standard"
+              type="text"
+              value={volumeArgs.fileName}
+              onChange={(event) => {
+                const validPattern = /^[a-zA-Z0-9_\-]*$/;
+                const newValue = event.target.value;
+                // Only update fileName if it's a valid name and max 50 characters
+                if (validPattern.test(newValue) && newValue.length <= 50) {
+                  setFileNameInput(newValue);
+                }
+              }}
+              helperText="Letters, numbers, underscores & hyphens only"/>
           </>
         )}
         <ButtonContainer>
