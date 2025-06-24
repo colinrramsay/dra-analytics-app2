@@ -1,9 +1,10 @@
 import Autocomplete from '@mui/material/Autocomplete';
 import TextField from '@mui/material/TextField';
 
-export default function AutocompleteInputMultiple({ label, options, value, setValue }) {
+export default function AutocompleteInputMultiple({ label, options, value, setValue, disabled }) {
   return (
     <Autocomplete
+      disabled={disabled}
       multiple
       id={`${label}-multi-select`}
       options={options}
@@ -14,7 +15,7 @@ export default function AutocompleteInputMultiple({ label, options, value, setVa
         setValue(newValue);
     }}
       filterSelectedOptions
-      sx={{ width: 500 }}
+      sx={{ width: 300 }}
       renderInput={(params) => (
         <TextField
           {...params}

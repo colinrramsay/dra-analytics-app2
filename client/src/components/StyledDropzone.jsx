@@ -34,6 +34,8 @@ function StyledDropzone({ onDrop, dropText }) {
     display: 'flex',
     flexDirection: 'column',
     alignItems: 'center',
+    height: '100%',
+    justifyContent: 'center',
     padding: '20px',
     borderWidth: 2,
     borderRadius: 2,

@@ -1,8 +1,8 @@
 import * as Material from '@mui/material';
 
-function Select({ label, value, options, handleChange }) {
+function Select({ label, value, options, handleChange, width }) {
     return (
-        <Material.FormControl fullWidth>
+        <Material.FormControl sx={{ width: 200, margin: '15px'}}>
             <Material.InputLabel>{label}</Material.InputLabel>
             <Material.Select
                 label={label}

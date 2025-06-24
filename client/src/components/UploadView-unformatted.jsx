@@ -52,8 +52,7 @@ const Title = styled(Material.Typography)({
 
 const DropzoneContainer = styled('div')({
   width: '100%',
-  maxWidth: '36rem',
-  height: '10rem',
+  maxWidth: '36rem'
 });
 
 const FileName = styled(Material.Typography)(({ theme }) => ({
@@ -64,17 +63,6 @@ const FileName = styled(Material.Typography)(({ theme }) => ({
 const ButtonContainer = styled('div')(({ theme }) => ({
   marginTop: theme.spacing(3)
 }));
-
-// Add a new styled component for the grid layout
-const InputGrid = styled('div')({
-  display: 'grid',
-  gridTemplateColumns: 'repeat(2, 300px)',
-  gridGap: '15px',
-  marginTop: '15px',
-  marginBottom: '15px',
-  justifyContent: 'center',
-  width: '100%'
-});
 
 function UploadView({ uploadFile, fetchScorecard, uploadedFile, uploadMessage, setCurrView, fetchSync, analyticsType, setAnalyticsType }) {
   // const [datasets, setDatasets] = useState([]); // State to manage all available datasets for chosen state
@@ -132,39 +120,20 @@ function UploadView({ uploadFile, fetchScorecard, uploadedFile, uploadMessage, s
           sorted.elections.unshift('All Elections')
           setSortedDatasets(sorted); // Update sorted datasets state
           console.log('Sorted datasets:', sorted); // Debugging log
-          const prevArgs = volumeArgs;
-          setVolumeArgs({
-            ...prevArgs,
-            state: resObj.state,
-            planType: resObj.planType,
-            elections: [],
-            census: null,
-            vap: null,
-            cvap: null,
-          })
+          setStateAndPlanTypeInput(resObj); // Set state input based on fetched data
           console.log('State set to:', resObj.state); // Debugging log
           console.log('Plan type set to:', resObj.planType); // Debugging log
         } catch (error) {
           console.error('Error fetching state & datasets:', error);
         }
-
-      } else {
-        // If plans is cleared, reset state, planType, datasets, and sortedDatasets
-        const prevArgs = volumeArgs;
-        setVolumeArgs({
-          ...prevArgs,
-          state: null,
-          planType: null,
-          elections: [],
-          census: null,
-          vap: null,
-          cvap: null,
-        })
-        setSortedDatasets({ elections: [], census: [], vap: [], cvap: [] });
       }
     }
     fetchStateAndDatasets()
     // Reset datasets input when state changes
+    setArg.elections([]);
+    setArg.census(null);
+    setArg.vap(null);
+    setArg.cvap(null);
   }, [volumeArgs.plans]);
 
   // Effect to filter datasets based on existing selections
@@ -207,15 +176,14 @@ function UploadView({ uploadFile, fetchScorecard, uploadedFile, uploadMessage, s
   }
 
   // Set state input for volume scoring
-  // function setStateAndPlanTypeInput(value) {
-  //   console.log('Setting state & planType input:', value);
-  //   const prevArgs = volumeArgs;
-  //   setVolumeArgs({
-  //     ...prevArgs,
-  //     state: value.state,
-  //     planType: value.planType
-  //   });
-  // }
+  function setStateAndPlanTypeInput(value) {
+    const prevArgs = volumeArgs;
+    setVolumeArgs({
+      ...prevArgs,
+      state: value.state,
+      planType: value.planType
+    });
+  }
 
   // Set file name input for volume scoring
   function setFileNameInput(value) {
@@ -380,52 +348,46 @@ function UploadView({ uploadFile, fetchScorecard, uploadedFile, uploadMessage, s
               value={volumeArgs.plans} 
               setValue={setPlansInput}
               label='Plans' />
-            {/* Grid layout for election, census, vap, cvap inputs */}
-            {volumeArgs.state && (
-              <>
-              <InputGrid>
-                <AutocompleteInputMultiple 
-                  options={sortedDatasets.elections}
-                  value={volumeArgs.elections} 
-                  setValue={setArg.elections}
-                  label='Elections'
-                  disabled={!sortedDatasets.elections || sortedDatasets.elections.length === 0} />
-                <AutocompleteInput 
-                  options={sortedDatasets.census} 
-                  value={volumeArgs.census} 
-                  setValue={setArg.census}
-                  label='Census'
-                  disabled={!sortedDatasets.census || sortedDatasets.census.length === 0} />
-                <AutocompleteInput 
-                  options={sortedDatasets.vap} 
-                  value={volumeArgs.vap} 
-                  setValue={setArg.vap}
-                  label='VAP'
-                  disabled={!sortedDatasets.vap || sortedDatasets.vap.length === 0} />
-                <AutocompleteInput 
-                  options={sortedDatasets.cvap} 
-                  value={volumeArgs.cvap} 
-                  setValue={setArg.cvap}
-                  label='CVAP'
-                  disabled={!sortedDatasets.cvap || sortedDatasets.cvap.length === 0} />
-              </InputGrid>
-              <TextField 
-                id="output-file-name"
-                label="Output File Name"
-                variant="standard"
-                type="text"
-                value={volumeArgs.fileName}
-                onChange={(event) => {
-                  const validPattern = /^[a-zA-Z0-9_\-]*$/;
-                  const newValue = event.target.value;
-                  // Only update fileName if it's a valid name and max 50 characters
-                  if (validPattern.test(newValue) && newValue.length <= 50) {
-                    setFileNameInput(newValue);
-                  }
-                }}
-                helperText="Letters, numbers, underscores & hyphens only"/>
-              </>
-            )}  
+            {/* <AutocompleteInput 
+              options={STATE_CODES} 
+              value={volumeArgs.state} 
+              setValue={setStateInput}
+              label='State' /> */}
+            <AutocompleteInputMultiple 
+              options={sortedDatasets.elections}
+              value={volumeArgs.elections} 
+              setValue={setArg.elections}
+              label='Elections' />
+            <AutocompleteInput 
+              options={sortedDatasets.census} 
+              value={volumeArgs.census} 
+              setValue={setArg.census}
+              label='Census' />
+            <AutocompleteInput 
+              options={sortedDatasets.vap} 
+              value={volumeArgs.vap} 
+              setValue={setArg.vap}
+              label='VAP' />
+            <AutocompleteInput 
+              options={sortedDatasets.cvap} 
+              value={volumeArgs.cvap} 
+              setValue={setArg.cvap}
+              label='CVAP' />
+            <TextField 
+              id="output-file-name"
+              label="Output File Name"
+              variant="standard"
+              type="text"
+              value={volumeArgs.fileName}
+              onChange={(event) => {
+                const validPattern = /^[a-zA-Z0-9_\-]*$/;
+                const newValue = event.target.value;
+                // Only update fileName if it's a valid name and max 50 characters
+                if (validPattern.test(newValue) && newValue.length <= 50) {
+                  setFileNameInput(newValue);
+                }
+              }}
+              helperText="Letters, numbers, underscores & hyphens only"/>
           </>
         )}
         <ButtonContainer>
