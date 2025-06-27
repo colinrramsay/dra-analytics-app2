@@ -126,8 +126,13 @@ function UploadView({ uploadFile, fetchScorecard, uploadedFile, uploadMessage, s
         try {
           const response = await fetch(`/volume/datasets/${volumeArgs.plans}`);
           const resObj = await response.json();
-          // setDatasets(resObj.datasets); // Update datasets state with the fetched data
-          // console.log('Datasets fetched:', resObj.datasets); // Debugging log
+          
+          // Check if the response is successful
+          if (!response.ok) {
+            throw new Error(`${resObj.error}`);
+          }
+          
+          //const resObj = await response.json();
           const sorted = sortDatasets(resObj.datasets); // Sort datasets by type
           sorted.elections.unshift('All Elections')
           setSortedDatasets(sorted); // Update sorted datasets state
@@ -146,6 +151,22 @@ function UploadView({ uploadFile, fetchScorecard, uploadedFile, uploadMessage, s
           console.log('Plan type set to:', resObj.planType); // Debugging log
         } catch (error) {
           console.error('Error fetching state & datasets:', error);
+
+          // Reset plans input if error occurs
+          const prevArgs = volumeArgs;
+          setVolumeArgs({
+            ...prevArgs,
+            plans: null,
+          })
+
+          // Show error dialog to user
+          setDialog({
+            state: true,
+            title: 'Error',
+            description: error.message || 'An error occurred while fetching state and datasets.',
+            button: true,
+            buttonText: 'Close'
+          });
         }
 
       } else {

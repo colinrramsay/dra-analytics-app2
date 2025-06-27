@@ -15,7 +15,8 @@ const { getFilePath,
         mapDatasetFileNames, 
         assignDatasets, 
         checkFileExists, 
-        getStatefromJsonl} = require('../utils/utils');
+        getStatefromJsonl,
+        fetchFiles} = require('../utils/utils');
 const { runScoreScript } = require('../utils/rdapy'); // Import the function to run the scoring script
 
 //Load environment variables
@@ -63,10 +64,24 @@ router.get('/datasets/:plans', async (req, res) => {
     const state = result[0]; // Extract state from result
     const planType = result[1]; // Extract planType from result
     console.log(`State: ${state}, Plan Type: ${planType}`);
+   
+    // Check if geojson file exists for the state
     console.log('Fetching datasets...');
-    const filePath = getFilePath('geojson', result[0]); // Get file path for state URL param on request
+    const filePath = `${GEOJSON_PATH}_${state}_2020_VD_tabblock.vtd.datasets.geojson`; // Get file path for state URL param on request
+    const geoJsonExists = checkFileExists(filePath);
+    if (!geoJsonExists) {
+        console.log('GeoJSON file not found locally, attempting to fetch from cloud...');
+        const result = await fetchFiles(state) // Attempt to fetch from cloud
+        if (!result) {
+            console.log('GeoJSON file not found in cloud, returning error.');
+            return res.status(400).json({ error: 'GeoJSON or graph file not found, and could not be fetched from cloud.' });
+        } else {
+            console.log('GeoJSON and graph files fetched from cloud successfully.');
+        }
+    }
+
+    // If geojson file exists or can be fetched, continue
     const geoJson = readGeoJSON(filePath); // Read and parse the GeoJSON file
-    // Placeholder: add logic check, if !geoJson, return error response (couldn't find/read geojson)
     const datasets = getDatasetsFromGeoJson(geoJson); //Get list of datasets from geojson
     console.log(datasets);
     const mappedDatasets = mapDatasetNames(datasets); // Map dataset names to user-friendly names
@@ -79,7 +94,7 @@ router.post('/score', (req, res) => {
     // Set file name if given, else use default
     const defaultName = `${req.body.plans.slice(0, -6)}` // Plans file name without .jsonl extension
     const fileName = req.body.fileName !== '' ? req.body.fileName : defaultName;
-    
+
     // Validate if precomputed file exists
     const precomputedPath = `${PRECOMPUTED_PATH}${req.body.state}_congress_precomputed.json`;
     const precomputed = checkFileExists(precomputedPath) ? precomputedPath : null

@@ -41,18 +41,20 @@ exports.checkFileExists = checkFileExists;
 
 // Read & parse a GeoJSON as JSON, download from cloud if not found locally
 exports.readGeoJSON = function(filePath) {
-    if (!checkFileExists(filePath)) {
-        // Placeholder for cloud fetch logic
-        console.log(`File not found locally: ${filePath}. Fetching from cloud...`);
-        // If unable to fetch, return null
-    }
+    // Deprecated - check for file exists earlier in chain
+    // if (!checkFileExists(filePath)) {
+    //     // Placeholder for cloud fetch logic
+    //     console.log(`File not found locally: ${filePath}. Fetching from cloud...`);
+    //     return null // If unable to fetch, return null - hardcoded until cloud fetch logic is implemented
+    // }
     const rawData = fs.readFileSync(path.resolve(__dirname, filePath), 'utf8');
     return JSON.parse(rawData);
 };
 
 // Extract datasets from geojson and return as array
 exports.getDatasetsFromGeoJson = function(geojson) {
-    const datasets = geojson.features[0].properties.datasets; // Grab obj of dataset objects from first precinct
+    const datasets = geojson?.features[0]?.properties?.datasets; // Grab obj of dataset objects from first precinct
+    if (!datasets) return []; // If no datasets found, return empty array
     const arrOfDatasets = [];
     for (const set in datasets) { // Iterate through dataset objects
         arrOfDatasets.push(set); // Add to array of datasets to return as options
@@ -229,4 +231,9 @@ exports.getStatefromJsonl = async function(file) {
             lineCount++;
         }
     }
+}
+
+exports.fetchFiles = async function(state) {
+    //Placeholder: fetch geosjon & graph based on state code & save locally
+    return false; // Hardcoded to return false for now until cloud fetch logic is implemented
 }

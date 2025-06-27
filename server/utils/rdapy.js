@@ -15,7 +15,7 @@ function runScoreScript(args) {
 
     const electionString = args.elections.join(',');
 
-    // Constructed strings for options command args based on user input: input || ''
+    // Constructed strings for optional command args based on user input: input || ''
     const commandStrings = {
       precomputed: args.precomputed ? `--precomputed ${args.precomputed}` : '',
       mode: `--mode all`, //to be made dynamic in future
