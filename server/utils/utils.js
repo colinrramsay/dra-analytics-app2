@@ -1,6 +1,7 @@
 const fs = require('fs');
 const path = require('path');
 const readline = require('readline');
+const AdmZip = require('adm-zip'); // For handling zip files
 const { fipsDict, stateCodes } = require('./fips-dict'); // Import FIPS dictionary and state codes set
 const districtsDict = require('./districts-dict'); // Import districts dictionary, planType : count
 
@@ -234,6 +235,43 @@ exports.getStatefromJsonl = async function(file) {
 }
 
 exports.fetchFiles = async function(state) {
-    //Placeholder: fetch geosjon & graph based on state code & save locally
-    return false; // Hardcoded to return false for now until cloud fetch logic is implemented
+    console.log(`Fetching files for state: ${state}`);
+    const version = 'v06'; // Hardcoded, can be updated to fetch latest version dynamically
+    
+    try {
+        // Fetch state data zip
+        const url = `https://github.com/dra2020/vtd_data/raw/refs/heads/master/2020_VTD/${state}/Geojson_${state}.${version}.zip`;
+        const response = await fetch(url);
+        // Check if fetch was successful
+        if (!response.ok) {
+            console.error(`Failed to fetch zip file: ${response.statusText}`);
+            return false;
+        }
+        // Get the buffer directly from the response
+        const buffer = Buffer.from(await response.arrayBuffer());
+        // Create the AdmZip instance from the buffer
+        const zip = new AdmZip(buffer);
+        // Define the extraction path - using process.env.GEOJSON_PATH
+        const extractPath = path.resolve(__dirname, process.env.GEOJSON_PATH);
+        // Ensure the extraction directory exists
+        fs.mkdirSync(extractPath, { recursive: true });
+        // Get a list of all entries in the zip
+        const zipEntries = zip.getEntries();
+        // Filter for only the files you want
+        zipEntries.forEach(zipEntry => {
+            // Only extract files with .geojson or .json (graph file) extension
+            if (zipEntry.entryName.endsWith('.geojson') || zipEntry.entryName.endsWith('.json')) {
+                console.log(`Extracting ${zipEntry.entryName}`);
+                zip.extractEntryTo(zipEntry, extractPath, false, true);
+                // Parameters: entry, target path, maintainEntryPath, overwrite
+            }
+        });
+        
+        // Log success message
+        console.log(`Successfully extracted files for state ${state} to ${extractPath}`);
+        return true;
+    } catch (error) {
+        console.error(`Error fetching or extracting files: ${error.message}`);
+        return false;
+    }
 }

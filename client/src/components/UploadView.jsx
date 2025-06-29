@@ -76,7 +76,7 @@ const InputGrid = styled('div')({
   width: '100%'
 });
 
-function UploadView({ uploadFile, fetchScorecard, uploadedFile, uploadMessage, setCurrView, fetchSync, analyticsType, setAnalyticsType }) {
+function UploadView({ uploadFile, fetchScorecard, uploadedFile, uploadMessage, setCurrView, analyticsType, setAnalyticsType }) {
   // const [datasets, setDatasets] = useState([]); // State to manage all available datasets for chosen state
   const [sortedDatasets, setSortedDatasets] = useState({}); // State to manage sorted datasets
   // const [filteredDatasets, setFilteredDatasets] = useState(datasets); // State to manage filtered datasets based on user selections
@@ -291,6 +291,26 @@ function UploadView({ uploadFile, fetchScorecard, uploadedFile, uploadMessage, s
       }
     })
     return datasetObj;
+  }
+
+  // Fetch data from cloud
+  async function fetchSync() {
+    try {
+      const response = await fetch('volume/sync', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(['CA', 'WA', 'NC']) // Example state - set to array of states needed
+      });
+      const result = await response.json();
+      if (!response.ok) {
+        throw new Error(`${result.error || 'Failed to fetch states:'} ${result.states}`);
+      }
+      console.log(result);
+    } catch (error) {
+      console.error('Error fetching data from cloud:', error);
+    }
   }
 
   // Run volume scoring
