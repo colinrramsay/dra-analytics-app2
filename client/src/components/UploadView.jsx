@@ -19,6 +19,7 @@ import AutocompleteInput from './AutocompleteInput';
 import AutocompleteInputMultiple from './AutocompleteInputMultiple';
 import AlertDialog from './AlertDialog';
 import TextField from '@mui/material/TextField';
+import FetchDialog from './FetchDialog';
 
 //Constants
 const STATE_CODES = ['AL', 'AK', 'AZ', 'AR', 'CA', 'CO', 'CT', 'DE', 'FL', 'GA', 'HI', 'ID', 'IL', 'IN', 'IA', 'KS', 'KY', 'LA', 'ME', 'MD', 'MA', 'MI', 'MN', 'MS', 'MO', 'MT', 'NE', 'NV', 'NH', 'NJ', 'NM', 'NY', 'NC', 'ND', 'OH', 'OK', 'OR', 'PA', 'RI', 'SC', 'SD', 'TN', 'TX', 'UT', 'VT', 'VA', 'WA', 'WV', 'WI', 'WY'];
@@ -100,6 +101,14 @@ function UploadView({ uploadFile, fetchScorecard, uploadedFile, uploadMessage, s
     button: false, // Whether to show a button in the dialog
     buttonText: 'Close' // Text for the dialog button
   })
+  const [fetchDialog, setFetchDialog] = useState({
+    open: false, // Fetch dialog visibility state
+    states: [], // Selected states for fetching data
+    closeButton: true, // Whether to show a close button
+    fetchButton: true, // Whether to show a fetch button
+    select: true, // Whether to show state selection
+    message: 'Select states to fetch the associated geojson and graph files from the cloud. Files are saved locally for volume scoring use.' // Message to display in the fetch dialog
+  }); // State to manage fetch dialog visibility and options
 
   // Effect to fetch plans when component mounts
   useEffect(() => {
@@ -294,22 +303,50 @@ function UploadView({ uploadFile, fetchScorecard, uploadedFile, uploadMessage, s
   }
 
   // Fetch data from cloud
-  async function fetchSync() {
+  async function fetchData() {
+
+    setFetchDialog(prevDialog => ({
+      ...prevDialog,
+      fetchButton: false,
+      closeButton: false,
+      select: false,
+      message: 'Fetching data from cloud...'
+    }));
     try {
+      console.log('Fetching data for states:', fetchDialog.states);
       const response = await fetch('volume/sync', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify(['CA', 'WA', 'NC']) // Example state - set to array of states needed
+        body: JSON.stringify(fetchDialog.states) // Example state - set to array of states needed
       });
       const result = await response.json();
       if (!response.ok) {
         throw new Error(`${result.error || 'Failed to fetch states:'} ${result.states}`);
       }
       console.log(result);
+      setFetchDialog(prevDialog => ({
+        ...prevDialog,
+        message: 'Successfully fetched all states',
+        closeButton: true,
+      }));
     } catch (error) {
       console.error('Error fetching data from cloud:', error);
+      setFetchDialog(prevDialog => ({
+        ...prevDialog,
+        message: error.message
+      }));
+      // Reset fetch dialog after 3 seconds
+      setTimeout(() => {
+        setFetchDialog(prevDialog => ({
+          ...prevDialog,
+          states: [],
+          fetchButton: true,
+          closeButton: true,
+          select: true,
+        }));
+      }, 3000);
     }
   }
 
@@ -364,6 +401,7 @@ function UploadView({ uploadFile, fetchScorecard, uploadedFile, uploadMessage, s
   }
 
   // Handlers
+
   // Handle analytics type change
   function handleAnalyticsTypeChange(event) {
     setAnalyticsType(event.target.value);
@@ -384,8 +422,8 @@ function UploadView({ uploadFile, fetchScorecard, uploadedFile, uploadMessage, s
   return (
     <Container>
       <div style={{ display: 'flex', justifyContent: 'flex-end', alignItems: 'center', padding: '10px' }}>
-        <Material.Button onClick={fetchSync}>
-          Sync
+        <Material.Button onClick={() => setFetchDialog({...fetchDialog, open: true})}>
+          Fetch Data
         </Material.Button>
         <ShutdownButton setCurrView={setCurrView}/>
       </div>
@@ -486,7 +524,35 @@ function UploadView({ uploadFile, fetchScorecard, uploadedFile, uploadMessage, s
         button={dialog.button}
         buttonText={dialog.buttonText}
       />
-
+      <FetchDialog 
+        open={fetchDialog.open}
+        handleClose={() => 
+          // Close fetch dialog and reset state
+          setFetchDialog({
+            ...fetchDialog,
+            open: false,
+            states: [],
+            message: 'Select states to fetch the associated geojson and graph files from the cloud. Files are saved locally for volume scoring use.',
+            fetchButton: true,
+            closeButton: true,
+            select: true,
+          })}
+        select={fetchDialog.select}
+        closeButton={fetchDialog.closeButton}
+        fetchButton={fetchDialog.fetchButton}
+        value={fetchDialog.states}
+        setValue={(value) => setFetchDialog({...fetchDialog, states: value})}
+        fetchData={() => {
+          if (fetchDialog.states.length > 0) fetchData();
+          else {
+            setFetchDialog({
+              ...fetchDialog,
+              message: 'Please select at least one state to fetch data.'
+            });
+          }
+        }}
+        message={fetchDialog.message}
+      />
     </Container>
   )
 }
