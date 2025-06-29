@@ -6,6 +6,7 @@ const { fipsDict, stateCodes } = require('./fips-dict'); // Import FIPS dictiona
 const districtsDict = require('./districts-dict'); // Import districts dictionary, planType : count
 
 require('dotenv').config(); // Load environment variables from .env file
+const { DATA_PATH } = require('./filePaths'); // Import file paths from filePaths.js
 
 // State abbreviation geojson file name
 // Assumes stateCode is a valid two-letter state code
@@ -16,18 +17,18 @@ exports.getStateAbbFileName = function(stateCode) {
 }
 
 // Return a file path based on type and state code
-exports.getFilePath = function(type, stateCode) {
-    if (type === 'geojson') {
-        const fileName = `_${stateCode}_2020_VD_tabblock.vtd.datasets.geojson`;
-        return `${process.env.GEOJSON_PATH}${fileName}`;
-    } else if (type === 'graph') {
-        const fileName = `${stateCode}_2020_graph.json`;
-        return `../../sample-data/private-data/${fileName}`;
-    } else if (type === 'precomputed') {
-        const fileName = `${stateCode}_congress_precomputed.json`;
-        return `../rdapy/testdata/examples/${fileName}`;
-    } else return null; // Invalid type
-}
+// exports.getFilePath = function(type, stateCode) {
+//     if (type === 'geojson') {
+//         const fileName = `_${stateCode}_2020_VD_tabblock.vtd.datasets.geojson`;
+//         return `${DATA_PATH}${fileName}`;
+//     } else if (type === 'graph') {
+//         const fileName = `${stateCode}_2020_graph.json`;
+//         return `${DATA_PATH}${fileName}`;
+//     } else if (type === 'precomputed') {
+//         const fileName = `${stateCode}_congress_precomputed.json`;
+//         return `${DATA_PATH}precomputed/${fileName}`;
+//     } else return null; // Invalid type
+// }
 
 // Check if a file exists at the given path
 const checkFileExists = function(filePath) {
@@ -251,8 +252,8 @@ exports.fetchFiles = async function(state) {
         const buffer = Buffer.from(await response.arrayBuffer());
         // Create the AdmZip instance from the buffer
         const zip = new AdmZip(buffer);
-        // Define the extraction path - using process.env.GEOJSON_PATH
-        const extractPath = path.resolve(__dirname, process.env.GEOJSON_PATH);
+        // Define the extraction path - using DATA_PATH
+        const extractPath = DATA_PATH;
         // Ensure the extraction directory exists
         fs.mkdirSync(extractPath, { recursive: true });
         // Get a list of all entries in the zip

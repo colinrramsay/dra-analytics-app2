@@ -19,13 +19,15 @@ const { getFilePath,
         fetchFiles} = require('../utils/utils');
 const { runScoreScript } = require('../utils/rdapy'); // Import the function to run the scoring script
 
-//Load environment variables
+//Load environment variables & file paths
 require('dotenv').config();
-const OUTPUT_PATH = path.join(__dirname, process.env.OUTPUT_PATH) || path.join(__dirname, '../../output/'); // Default output path if not set in .env
-const PLANS_PATH = path.join(__dirname, process.env.PLANS_PATH) || path.join(__dirname, '../../plans/'); // Default input path if not set in .env
-const GEOJSON_PATH = path.join(__dirname, process.env.GEOJSON_PATH) || path.join(__dirname, '../../sample-data/private-data/');
-const GRAPH_PATH = path.join(__dirname, process.env.GRAPH_PATH) || path.join(__dirname, '../../sample-data/private-data/');
-const PRECOMPUTED_PATH = path.join(__dirname, process.env.PRECOMPUTED_PATH) || path.join(__dirname, '../rdapy/testdata/examples/');
+const { DATA_PATH, ENSEMBLE_PATH, SCORES_PATH } = require('../utils/filePaths'); // Import file paths from filePaths.js
+
+// const OUTPUT_PATH = path.join(__dirname, process.env.OUTPUT_PATH) || path.join(__dirname, '../../output/'); // Default output path if not set in .env
+// const PLANS_PATH = path.join(__dirname, process.env.PLANS_PATH) || path.join(__dirname, '../../plans/'); // Default input path if not set in .env
+// const GEOJSON_PATH = path.join(__dirname, process.env.GEOJSON_PATH) || path.join(__dirname, '../../sample-data/private-data/');
+// const GRAPH_PATH = path.join(__dirname, process.env.GRAPH_PATH) || path.join(__dirname, '../../sample-data/private-data/');
+// const PRECOMPUTED_PATH = path.join(__dirname, process.env.PRECOMPUTED_PATH) || path.join(__dirname, '../rdapy/testdata/examples/');
 
 //POST to /sync
 //Download requested geojson files from cloud, save locally
@@ -33,7 +35,7 @@ router.post('/sync', async (req, res) => {
     console.log(req.body);
     
     const statePromises = req.body.map(async state => {
-        const filePath = `${GEOJSON_PATH}${state}_2020_VD_tabblock.vtd.datasets.geojson`;
+        const filePath = `${DATA_PATH}${state}_2020_VD_tabblock.vtd.datasets.geojson`;
         
         if (checkFileExists(filePath)) {
             console.log(`File for state ${state} already exists locally.`);
@@ -95,7 +97,7 @@ router.post('/sync', async (req, res) => {
 router.get('/plans', (req, res) => {
     console.log('Fetching plan files...');
     // Get list of planfiles from the input directory
-    fs.readdir(PLANS_PATH, (err, files) => {
+    fs.readdir(ENSEMBLE_PATH, (err, files) => {
         if (err) {
             console.error('Error reading input directory:', err);
             return res.status(500).json({ error: 'Failed to read plans directory' });
@@ -108,7 +110,7 @@ router.get('/plans', (req, res) => {
 
 //GET to /datasets
 router.get('/datasets/:plans', async (req, res) => {
-    const result = await getStatefromJsonl(`${PLANS_PATH}${req.params.plans}`) // returns as [state, planType] if valid, else null
+    const result = await getStatefromJsonl(`${ENSEMBLE_PATH}${req.params.plans}`) // returns as [state, planType] if valid, else null
 
     // Check if state & planType is valid
     if (!result) return res.status(400).json({ error: 'Invalid plan file or state not found' });
@@ -118,7 +120,7 @@ router.get('/datasets/:plans', async (req, res) => {
    
     // Check if geojson file exists for the state
     console.log('Fetching datasets...');
-    const filePath = `${GEOJSON_PATH}${state}_2020_VD_tabblock.vtd.datasets.geojson`; // Get file path for state URL param on request
+    const filePath = `${DATA_PATH}${state}_2020_VD_tabblock.vtd.datasets.geojson`; // Get file path for state URL param on request
     const geoJsonExists = checkFileExists(filePath);
     if (!geoJsonExists) {
         console.log('GeoJSON file not found locally, attempting to fetch from cloud...');
@@ -147,7 +149,7 @@ router.post('/score', (req, res) => {
     const fileName = req.body.fileName !== '' ? req.body.fileName : defaultName;
 
     // Validate if precomputed file exists
-    const precomputedPath = `${PRECOMPUTED_PATH}${req.body.state}_congress_precomputed.json`;
+    const precomputedPath = `${DATA_PATH}precomputed/${req.body.state}_congress_precomputed.json`;
     const precomputed = checkFileExists(precomputedPath) ? precomputedPath : null
 
     // Add server-side computed prop & assigned datasets
@@ -158,10 +160,10 @@ router.post('/score', (req, res) => {
         census: mapDatasetFileNames(req.body.census),
         vap: mapDatasetFileNames(req.body.vap),
         cvap: mapDatasetFileNames(req.body.cvap),
-        plans: `${PLANS_PATH}${req.body.plans}`, // Path to plans file, passed from client + path prefix
-        output: `${OUTPUT_PATH}${fileName}`, // Path to output file, passed from client + path prefix
-        geojson: `${GEOJSON_PATH}${req.body.state}_2020_VD_tabblock.vtd.datasets.geojson`, // computed server side from state
-        graph: `${GRAPH_PATH}${req.body.state}_2020_graph.json`, // computed server side from state
+        plans: `${ENSEMBLE_PATH}${req.body.plans}`, // Path to plans file, passed from client + path prefix
+        output: `${SCORES_PATH}${fileName}`, // Path to output file, passed from client + path prefix
+        geojson: `${DATA_PATH}${req.body.state}_2020_VD_tabblock.vtd.datasets.geojson`, // computed server side from state
+        graph: `${DATA_PATH}${req.body.state}_2020_graph.json`, // computed server side from state
         precomputed: precomputed, // Path to precomputed file, if exists
     }
 

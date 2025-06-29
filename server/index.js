@@ -5,6 +5,7 @@ Express server entry point
 const express = require('express');
 const cors = require('cors');
 const path = require('path');
+const fs = require('fs');
 const open = require('open');
 const app = express();
 
@@ -14,7 +15,10 @@ const volumeRoutes = require('./routes/volumeRoutes');
 
 
 require('dotenv').config()
+const { ENSEMBLE_PATH, SCORES_PATH } = require('./utils/filePaths'); // Import file paths from filePaths.js
 const PORT = process.env.PORT || 3001;
+fs.mkdirSync(ENSEMBLE_PATH, { recursive: true }); // Ensure ensembles directory exists
+fs.mkdirSync(SCORES_PATH, { recursive: true }); // Ensure scores directory exists
 
 //CORS configuration only when running in development
 // This is important for local development to allow the React app to communicate with the Express server
