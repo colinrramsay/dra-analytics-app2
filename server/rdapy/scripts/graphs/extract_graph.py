@@ -8,8 +8,10 @@ $ scripts/graphs/extract_graph.py \
 --graph /path/to/output-graph.json \
 --locations /path/to/precinct-locations.json
 
-NOTE - If the graph is not fully connected, the output file will have
+* If the graph is not fully connected, the output file will have
   "_NOT_CONNECTED" appended to the filename.
+* The temporary precinct locations are used to find edges to add
+  to make the graph fully connected.
 """
 
 import argparse
@@ -27,10 +29,7 @@ from shapely.geometry import (
 )
 from libpysal.weights import Rook, WSP
 
-from rdapy import is_consistent, is_connected, OUT_OF_STATE
-
-
-EPSILON: float = 1.0e-12
+from rdapy import is_consistent, is_connected, OUT_OF_STATE, OUT_OF_STATE_THRESHOLD
 
 
 def main() -> None:
@@ -45,7 +44,7 @@ def main() -> None:
 
     df: DataFrame = DataFrame([f.get("properties", {}) for f in geojson["features"]])
     gdf: GeoDataFrame = GeoDataFrame(df, geometry=[shape(f["geometry"]) for f in geojson["features"]])  # type: ignore
-    adjacency_graph: Dict[str, List[str]] = from_dataframe(gdf)
+    adjacency_graph: Dict[str, List[str]] = _from_dataframe(gdf)
 
     # Check whether the graph is consistent & fully connected
 
@@ -91,7 +90,7 @@ def main() -> None:
 ### HELPERS ###
 
 
-def from_dataframe(df: GeoDataFrame, geoid_field: str = "id") -> Dict[str, List[str]]:
+def _from_dataframe(df: GeoDataFrame, geoid_field: str = "id") -> Dict[str, List[str]]:
     """Extract a rook graph from a DataFrame."""
 
     g: Rook | WSP = Rook.from_dataframe(df, ids=geoid_field)
@@ -165,7 +164,7 @@ def _add_out_of_state_neighbors(
 
             total_shared_border += shared_border
 
-        if (perimeter - total_shared_border) > EPSILON:
+        if (perimeter - total_shared_border) > OUT_OF_STATE_THRESHOLD:
             new_graph[node].append(OUT_OF_STATE)
             new_graph[OUT_OF_STATE].append(node)
 

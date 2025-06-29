@@ -10,9 +10,52 @@ These scripts are in the `scripts` directory.
 
 ### Input Data
 
-The data & shapes used by this scoring toolchain are [Dave's Redistricting](https://davesredistricting.org/) (DRA) [GeoJSON files](TODO).
+The data & shapes used by this scoring toolchain are the GeoJSON and adjacency graph files
+published by [Dave's Redistricting](https://davesredistricting.org/) (DRA)
+in the [dra2020/vtd_data](https://github.com/dra2020/vtd_data) GitHub repository.
 The specifics of that format are described there.
-The frontend data-processing scripts here depend on that custom GeoJSON format.
+The front-end data-processing scripts here depend on that custom GeoJSON format.
+
+You can use this data in two different ways.
+One is to clone the `dra2020/vtd_data` GitHub repository:
+
+```bash
+cd /path/to/your/dev/root
+git clone https://github.com/dra2020/vtd_data
+```
+
+This copies all the data in the repository to your local machine.
+This repository is quite large, so you may want to use the alternative method below.
+
+Another way to use this data is to download the data for a state temporarily as you need it.
+For example:
+
+```bash
+scripts/GET-GEOJSON.sh \
+--state NC \
+--output /tmp/NC_Geojson.zip \
+--version v06
+```
+
+This downloads the v06 NC GeoJSON file and adjacency graph to a temporary file in `/tmp`.
+From there, you can either manually unzip or use the `UNZIP-GEOJSON.sh` script.
+For example:
+
+```bash
+scripts/UNZIP-GEOJSON.sh \
+--input /tmp/NC_Geojson.zip \
+--output /tmp/NC
+```
+
+This example unzips the downloaded file to a directory in `/tmp`.
+
+Either way, the unzipped GeoJSON directory will contain four files:
+- A license file
+- A README file
+- A GeoJSON like this `NC_2020_VD_tabblock.vtd.datasets.geojson`, and
+- An adjacency graphy like this `NC_2020_graph.json`
+
+which you can use as input to the scoring scripts.
 
 ### Scores (Metrics)
 
@@ -33,7 +76,7 @@ A few are not included for various reasons:
 The scores here also include several metrics not yet in the DRA app, including:
 
 *   In the proportionality/partisan category, there are two efficiency gap variations: 
-    `efficiency_gap_wasted_votes` and `efficiency_gap_statewide` 
+    `efficiency_gap_wasted_votes` and `efficiency_gap_FPTP` 
     to complement the statewide fractional seats version in DRA.
 *   In the competitiveness category, there is a simple count of the number of districts in the 0.45-0.55 range,
     `competitive_district_count`, and the average margin of victor, `average_margin`.
@@ -47,34 +90,39 @@ The scores here also include several metrics not yet in the DRA app, including:
 
 ### SCORE.sh
 
-This example bash script shows how to take an ensemble of plans, a DRA geojson file, and an adjacency graph, and 
-generate a CSV file of scores and a JSONL file of by-district measures.
-It uses 2020 census, VAP, and CVAP data from geojson, as well as the 2016-2020 election composite.
-Only one election is scored at this time.
+Continuing the example above, you can score an ensemble of plans which
+generates a CSV file of scores and a JSONL file of by-district measures.
+For example:
 
 ```bash
 scripts/score/SCORE.sh \
---state xx \
+--state NC \
 --plan-type congress \
---geojson path/to/DRA.geojson \
---graph path/to/adjacency_graph.json \
---plans path/to/plans.jsonl \
+--geojson /tmp/NC/NC_2020_VD_tabblock.vtd.datasets.geojson \
+--census T_20_CENS \
+--vap V_20_VAP \
+--cvap V_20_CVAP \
+--elections E_16-20_COMP \
+--graph /tmp/NC/NC_2020_graph.json \
+--plans testdata/plans/NC_congress_plans.tagged.jsonl \
 --scores path/to/scores.csv \
 --by-district path/to/by-district.jsonl
 ```
 
 where:
 
-*   The state is a two-character state code.
+*   The `state` is a two-character state code.
 *   The `plan-type` is `congress`, 'upper`, or `lower`, for upper and lower state house.
 *   The `geojson` is a DRA precinct GeoJSON file with data coded by dataset.
-    An example is provided in `testdata/data/NC_vtd_datasets.geojson`.
 *   The `graph` is a JSON file that contains the node/list of neighbors adjacency graph of the precincts.
-    An example is provided in `testdata/examples/NC_graph.json`.
+*   The `census`, `vap`, and `cvap` are the dataset keys for the census, VAP, and CVAP datasets in the GeoJSON.
+    The example uses the 2020 census, VAP, and CVAP data from the GeoJSON, as well as the 2016-2020 election composite.
 *   The `plans` is a JSONL file that contains the ensemble of plans to be scored.
     The plans can be simple dictionaries of geoid:district assignments, or
-    they can be tagged 'plan' records in the ensemble format used by `rdatools/rdatools` and `rdatools/rdautils`.
-    An example of the latter is provided in `testdata/plans/NC_congress_plans.tagged.jsonl`.
+    they can be 'tagged' plan records.
+    An example of this is provided in `testdata/plans/NC_congress_plans.tagged.jsonl`.
+*   The optional `precomputed` argument is a JSON file that contains pre-computed geographic baselines for
+    states and chambers (plan types). If provided, scoring includes the geographic advantage measure.
 
 The script writes a set of plan-level scores to a CSV file
 a set of by-district measures to a JSONL file, and 
@@ -83,9 +131,6 @@ Examples of these files can be found in `testdata/examples/`.
 
 The plan-level scores are described in [Scores (Metrics)]({{ '/scores' | prepend: site.baseurl }}).
 
-*Note: This scripts does not extract an adjacency graph from the GeoJSON.
-It uses a pre-computed adjacency graph from DRA.*
-
 By default, this script calculates all metrics ("scores") for all plans in an input ensemble.
 If your ensembles are very large though, you can [increase scoring throughput]({{ '/throughput' | prepend: site.baseurl }})
 by breaking the overall process down into pieces and running them in parallel.
@@ -93,33 +138,23 @@ by breaking the overall process down into pieces and running them in parallel.
 ### Component Scripts
 
 If you want more fine-grained control over the scoring process,
-you can use these component scripts directly.
-
-#### Extracting an Adjacency Graph from a GeoJSON
-
-This script extracts an adjacency graph from a DRA GeoJSON file.
-
-```bash
-scripts/extract_graph.py \
---geojson path/to/DRA.geojson \
---graph path/to/adjacency_graph.json
-```
-
-*Note: This script can read a CSV file that contains more precinct-to-precinct adjacencies to add to the graph,
-"mods" for ["operational contiguity"](https://medium.com/dra-2020/contiguity-20f23ea15969).*
+you can use the constituent  component scripts directly.
 
 #### Mapping Scoring Data to a DRA GeoJSON
 
 This script maps the data needed for scoring plans to the data in a DRA GeoJSON file.
-The specific datasets used can be specified as optional arguments.
-The default datasets are the 2020 census, VAP, and CVAP data,
-and the composite election dataset for 2016-2020 elections.
 
 ```bash
-scripts/map_scoring_data.py \
+scripts/data/map_scoring_data.py \
 --geojson path/to/DRA.geojson \
 --data-map path/to/data_map.json
 ```
+
+The specific datasets used can be specified as optional arguments.
+The default datasets are the 2020 census, VAP, and CVAP data,
+and the composite election dataset for 2016-2020 elections.
+By default, composite elections are *not* expanded to include the constituent elections,
+but you expand composite elections with the `--expand-composites` option.
 
 #### Extracting Data from a DRA GeoJSON
 
@@ -127,7 +162,7 @@ This script extracts data from a DRA GeoJSON file and writes it to a JSONL file,
 using the data map to determine what data to extract.
 
 ```bash
-scripts/extract_data.py \
+scripts/data/extract_data.py \
 --geojson path/to/DRA.geojson \
 --data-map path/to/data_map.json \
 --graph path/to/adjacency_graph.json \
@@ -141,20 +176,20 @@ and writes the plan and the aggregates to STDOUT.
 
 ```bash
 cat path/to/plans.jsonl \
-| scripts/aggregate.py \
+| scripts/score/aggregate.py \
 --state xx \
 --plan-type congress \
 --data path/to/input_data.jsonl \
 --graph path/to/adjacency_graph.json > path/to/plans_plus_aggregates.jsonl
 ```
 
-This script reads plans as JSONL from the input stream.
+It reads plans as JSONL from the input stream.
 Each plan can be a simple dictionary of geoid:district assignments, or
 a tagged format with the `"_tag_"` tag equal to `"plan"` and the `"plan"` key containing the geoid:district pairs.
 Examples of these formats can be found in `testdata/plans/` in `NC_congress_plans.naked.jsonl` and `NC_congress_plans.tagged.jsonl`, respectively.
 
 If the JSON records are in tagged format, metadata records are passed through unchanged, 
-as are any other records.
+as are any other non-plan records.
 
 In addition to any records simply passed through, the output stream contains a record for each plan with
 the geoid:district assignments in the `"plan"` key and the district-level aggregates in the `"aggregates"` key. 
@@ -164,9 +199,10 @@ the aggregates by district. For example:
 
 `{"election": {"E_16-20_COMP": {"dem_by_district": [...] ...} ...}`.
 
-The first item in each list is a state-level aggregate, and the rest are district-level aggregates for districts 1 to N.
+The first item in each list of values is a state-level aggregate, and 
+the rest are district-level aggregates for districts 1 to N.
 
-You can see an example in `testdata/examples/NC_congress_aggs.100.v4.jsonl`.
+You can see an example in `testdata/examples/NC_congress_aggs.100.jsonl`.
 
 There are some helper scripts to convert [alternative formats]({{ '/formats' | prepend: site.baseurl }}) 
 into the tagged format that can be ingested by the `aggregate.py` script.
@@ -179,7 +215,7 @@ the district-level aggregates.
 
 ```bash
 cat path/to/plans_plus_aggregates.jsonl \
-| scripts/score.py \
+| scripts/score/score.py \
 --state xx \
 --plan-type congress \
 --data path/to/input_data.jsonl \
@@ -187,9 +223,7 @@ cat path/to/plans_plus_aggregates.jsonl \
 ```
 
 Analogous to the `aggregate.py` script output, scoring writes plan-level scores in a hierarchical JSONL format:
-the type of dataset (census, vap, cvap, election, shape), 
-the dataset key, and
-the metric name and value.
+the type of dataset (census, vap, cvap, election, shape), the dataset key, and the metric name and value.
 For example:
 
 `{"election": {"E_16-20_COMP": {"estimated_vote_pct": 0.4943, ...} ...} ...}`.
@@ -207,7 +241,10 @@ cat path/to/scores_plus_aggregates.jsonl \
 --by-district path/to/by-district.jsonl
 ```
 
-To keep the plan-level scores a simple CSV, this script "flattens" the hierarchical JSONL format
-making field names by combining the dataset keys and metric names with a period, e.g., `E_16-20_COMP.estimated_seats`.
+To keep the plan-level scores a simple CSV, this script "flattens" the hierarchical JSONL format into a CSV file.
+By default, the field names are simply the name of the metrics. However, if you specify the `--prefixes` option
+or there are multiple election datasets scored, this script prefixes the metric names with the dataset key,
+e.g., `E_16-20_COMP.estimated_seats`.
+
 If you want output in a different format, you can process the output of the `score.py` script 
 with a different script-let or directly, e.g., using `jq`.

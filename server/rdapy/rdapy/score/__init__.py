@@ -1,18 +1,12 @@
 # rdapy/score/__init__.py
 
-from .utils import *
-
-from .aggregate import (
-    aggregate_plans,
-    aggregate_districts,
-    Aggregates,
-    DatasetKey,
-    get_dataset,
-    get_datasets,
-    get_fields,
-)
 from .analyze import score_plans, score_plan
-
-from .geographic import *
+from .categories import (
+    calc_general_category,
+    calc_partisan_category,
+    calc_minority_category,
+    calc_compactness_category,
+    calc_splitting_category,
+)
 
 name: str = "score"

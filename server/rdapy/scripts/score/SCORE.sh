@@ -11,7 +11,9 @@ MODE="all"
 CENSUS="T_20_CENS"
 VAP="V_20_VAP"
 CVAP="V_20_CVAP"
-ELECTION="E_16-20_COMP"
+ELECTIONS="E_16-20_COMP"
+EXPAND_COMPOSITES=""
+PREFIXES=""
 
 # Parse command line arguments
 while [[ $# -gt 0 ]]; do
@@ -65,8 +67,16 @@ while [[ $# -gt 0 ]]; do
       shift 2
       ;;
     --elections)
-      ELECTION="$2"
+      ELECTIONS="$2"
       shift 2
+      ;;
+    --expand-composites)
+      EXPAND_COMPOSITES="--expand-composites"
+      shift 1
+      ;;
+    --prefixes)
+      PREFIXES="--prefixes"
+      shift 1
       ;;
     *)
       echo "Unknown argument: $1"
@@ -115,11 +125,11 @@ temp_data=$(mktemp /tmp/data.XXXXXX)
 
 scripts/data/map_scoring_data.py \
 --geojson "$GEOJSON" \
---data-map "$temp_data_map" \
 --census "$CENSUS" \
 --vap "$VAP" \
 --cvap "$CVAP" \
---elections "$ELECTION"
+--elections "$ELECTIONS" \
+--data-map "$temp_data_map" ${EXPAND_COMPOSITES:+$EXPAND_COMPOSITES}
 
 scripts/data/extract_data.py \
 --geojson "$GEOJSON" \
@@ -141,12 +151,12 @@ scripts/score/score.py \
 --plan-type "$PLAN_TYPE" \
 --data "$temp_data" \
 --graph "$GRAPH" \
---mode "$MODE" $PRECOMPUTED_FLAG \
+--mode "$MODE" ${PRECOMPUTED_FLAG:+$PRECOMPUTED_FLAG} \
 |
 scripts/score/write.py \
 --data "$temp_data" \
 --scores "$SCORES" \
---by-district "$BY_DISTRICT"
+--by-district "$BY_DISTRICT" ${PREFIXES:+$PREFIXES}
 
 echo
 echo "Done!"

@@ -9,23 +9,11 @@ WRITE SCORES
 
 Usage:
 
-cat testdata/examples/NC_congress_scores.100.v3.jsonl \
+cat testdata/examples/NC_congress_scores.100.jsonl \
 | scripts/score/write.py \
---data testdata/examples/NC_input_data.v3.jsonl \
---scores temp/DEBUG_scores.csv \
---by-district temp/DEBUG_by-district.jsonl
-
-cat testdata/examples/NC_congress_scores.100.v4.jsonl \
-| scripts/score/write.py \
---data testdata/examples/NC_input_data.v4.jsonl \
---scores temp/DEBUG_scores.csv \
---by-district temp/DEBUG_by-district.jsonl
-
-cat testdata/examples/NC_congress_scores.100.v5.jsonl \
-| scripts/score/write.py \
---data testdata/examples/NC_input_data.v4.jsonl \
---scores temp/DEBUG_scores.csv \
---by-district temp/DEBUG_by-district.jsonl
+--data testdata/examples/NC_input_data.jsonl \
+--scores temp/TEST_scores.csv \
+--by-district temp/TEST_by-district.jsonl
 
 """
 
@@ -64,6 +52,8 @@ def main() -> None:
                     record: Dict[str, Any] = read_record(line)
                     assert "_tag_" in record
 
+                    # Write metadata to a JSON file
+
                     if record["_tag_"] == "metadata":
                         scores_metadata = record["properties"]
                         scores_metadata.update(data_map)
@@ -72,9 +62,12 @@ def main() -> None:
 
                     assert record["_tag_"] == "scores"
 
+                    # Write scores to a CSV file
+
                     scores: Dict[str, Any] = {"name": record["name"]}
-                    scores.update(flatten_scores(record["scores"]))
-                    # scores.update(record["scores"])
+                    scores.update(
+                        flatten_scores(record["scores"], prefixes=args.prefixes)
+                    )
 
                     if i == 0:
                         cols: List[str] = list(scores.keys())
@@ -83,6 +76,8 @@ def main() -> None:
                         )
                         writer.writeheader()
                     writer.writerow(format_scores(scores))
+
+                    # Write by-district aggregates to a JSONL file
 
                     aggs: Dict[str, Any] = {
                         "_tag_": "by-district",
@@ -96,18 +91,22 @@ def main() -> None:
     pass  # for debugging
 
 
-def flatten_scores(scores: Dict[str, Any]) -> Dict[str, Any]:
+def flatten_scores(scores: Dict[str, Any], *, prefixes: bool) -> Dict[str, Any]:
     """
     Convert a scores JSONL record that has dataset types, datasets, and metrics & values
     into a flat dictionary with dataset.metric:value key:value pairs.
+
+    Use a 'dataset' prefix if `prefix` is True -or- there are multiple datasets
+    for the dataset type; otherwise use just the metric name.
     """
 
     flattened: Dict[str, Any] = {}
 
     for dataset_type in scores:
+        prefix_mode: bool = prefixes or len(scores[dataset_type]) > 1
         for dataset in scores[dataset_type]:
             for metric in scores[dataset_type][dataset]:
-                qualified_key = f"{dataset}.{metric}"
+                qualified_key = f"{dataset}.{metric}" if prefix_mode else f"{metric}"
                 flattened[qualified_key] = scores[dataset_type][dataset][metric]
 
     return flattened
@@ -140,6 +139,13 @@ def parse_args():
         type=str,
         dest="by_district",
         help="The path to the by-district aggregates JSON file to write",
+    )
+
+    parser.add_argument(
+        "--prefixes",
+        dest="prefixes",
+        action="store_true",
+        help="Prefix metrics with dataset name",
     )
 
     parser.add_argument(

@@ -24,7 +24,7 @@
   "author": "Colin Ramsay",
   "license": "ISC",
   "dependencies": {
-    "@dra2020/dra-analytics": "^4.1.4",
+    "@dra2020/dra-analytics": "^4.1.6",
     "adm-zip": "^0.5.16",
     "cors": "^2.8.5",
     "dotenv": "^16.5.0",

@@ -1,9 +1,68 @@
 # rdapy/__init__.py
 
-from .utils import *
+from .base import (
+    EPSILON,
+    OUT_OF_STATE,
+    OUT_OF_STATE_THRESHOLD,
+    DISTRICTS_BY_STATE,
+    COUNTIES_BY_STATE,
+    is_water_only,
+    DatasetKey,
+    Aggregates,
+    #
+    read_csv,
+    read_json,
+    write_csv,
+    write_json,
+    load_features,
+    load_shapes,
+    index_shapes,
+    abstract_data,
+    abstract_shape,
+    load_neighborhoods,
+    #
+    approx_equal,
+    vector_approx_equal,
+    matrix_approx_equal,
+    #
+    get_dataset,
+    get_datasets,
+    get_fields,
+    #
+    DistanceLedger,
+    #
+    Precinct,
+    District,
+    PlanCSV,
+    GeoIDIndex,
+    Graph,
+    County,
+    ParseGeoID,
+    #
+    load_data,
+    load_graph,
+    collect_metadata,
+    sorted_geoids,
+    index_data,
+    #
+    smart_read,
+    smart_write,
+    format_scores,
+    write_record,
+    read_record,
+    MetadataRecord,
+    PlanRecord,
+    #
+    init_bit_array,
+    set_bit,
+    serialize_bits,
+    deserialize_bits,
+    index_geoids,
+    reverse_index,
+)
 
 from .compactness import (
-    calc_compactness,
+    calc_compactness_metrics,
     calc_sym_x,
     calc_sym_y,
     calc_reock,
@@ -11,13 +70,21 @@ from .compactness import (
     calc_polsby,
     calc_hull,
     calc_schwartzberg,
+    #
     featureize_shape,
     score_features,
     kiwysi_rank_shape,
     trim_kiwysi_rank,
-    make_circle,
+    #
+    # make_circle,
     reock_formula,
     polsby_formula,
+    #
+    calc_cut_score,
+    calc_spanning_tree_score,
+    _split_graph_by_districts,
+    #
+    calc_energy,
 )
 
 from .equal import calc_population_deviation
@@ -26,7 +93,6 @@ from .graph import (
     is_consistent,
     is_connected,
     is_embedded,
-    OUT_OF_STATE,
     connected_subsets,
     generate_contiguity_mods,
     Connection,
@@ -35,62 +101,58 @@ from .graph import (
 from .minority import (
     calc_proportional_districts,
     est_minority_opportunity,
-    calc_minority_opportunity,
+    calc_minority_metrics,
     DEMOGRAPHICS,
+    calculate_mmd_with_comparisons,
+    calculate_mmd_simple,
 )
 
 from .splitting import (
-    calc_county_district_splitting,
+    calc_splitting_metrics,
     split_score,
-    calc_county_fractions,
-    calc_county_weights,
-    county_split_score,
-    county_splitting,
-    calc_county_splitting,
-    calc_district_fractions,
-    calc_district_weights,
-    district_split_score,
-    district_splitting,
-    calc_district_splitting,
-    reduce_county_splits,
-    reduce_district_splits,
-    county_totals,
-    district_totals,
-    calc_county_splitting_reduced,
-    calc_district_splitting_reduced,
+    #
     calc_coi_splitting,
     uncertainty_of_membership,
     effective_splits,
 )
 
 from .partisan import (
-    calc_partisan_metrics,
     calc_best_seats,
-    calc_disproportionality_from_best,
+    calc_declination,
     calc_disproportionality,
+    calc_disproportionality_from_best,
     calc_efficiency_gap,
     calc_gamma,
-    est_seats_bias,
-    est_votes_bias,
-    est_geometric_seats_bias,
     calc_global_symmetry,
-    calc_declination,
+    calc_lopsided_outcomes,
     calc_mean_median_difference,
     calc_turnout_bias,
-    calc_lopsided_outcomes,
+    est_fptp_seats,
+    est_geometric_seats_bias,
+    est_seat_probability,
+    est_seats,
+    est_seats_bias,
+    est_votes_bias,
+    #
+    calc_big_R,
+    calc_minimal_inverse_responsiveness,
     count_competitive_districts,
     est_competitive_districts,
     est_district_competitiveness,
-    est_responsiveness,
-    calc_big_R,
-    calc_minimal_inverse_responsiveness,
-    est_responsive_districts,
-    est_seat_probability,
     est_district_responsiveness,
-    est_seats,
-    est_fptp_seats,
-    infer_sv_points,
+    est_responsive_districts,
+    est_responsiveness,
+    #
     infer_inverse_sv_points,
+    infer_sv_points,
+    #
+    calc_efficiency_gap_wasted_votes,
+    calc_average_margin,
+    #
+    Neighbor,
+    make_neighborhood,
+    unpack_neighborhood,
+    calc_geographic_baseline,
 )
 
 from .rate import (
@@ -105,49 +167,20 @@ from .rate import (
     rate_splitting,
 )
 
-from .score import (
+from .aggregate import (
     aggregate_districts,
     aggregate_plans,
-    Aggregates,
-    calc_geographic_baseline,
-    collect_metadata,
-    County,
-    DatasetKey,
-    deserialize_bits,
-    District,
-    DISTRICTS_BY_STATE,
-    eval_partisan_lean,
-    format_scores,
-    GeoIDIndex,
-    get_dataset,
-    get_datasets,
-    get_fields,
-    Graph,
-    index_data,
-    index_geoids,
-    init_bit_array,
-    load_data,
-    load_graph,
-    load_neighborhoods,
-    make_neighborhood,
-    MetadataRecord,
-    nearest_connected_neighbor,
-    Neighbor,
-    ParseGeoID,
-    PlanCSV,
-    PlanRecord,
-    Precinct,
-    read_record,
-    reverse_index,
+)
+
+from .score import (
     score_plan,
     score_plans,
-    serialize_bits,
-    set_bit,
-    smart_read,
-    smart_write,
-    sorted_geoids,
-    unpack_neighborhood,
-    write_record,
+    #
+    calc_general_category,
+    calc_partisan_category,
+    calc_minority_category,
+    calc_compactness_category,
+    calc_splitting_category,
 )
 
 

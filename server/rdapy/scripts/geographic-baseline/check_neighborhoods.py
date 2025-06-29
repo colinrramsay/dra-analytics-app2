@@ -6,9 +6,10 @@ EXPERIMENT: VERIFY THAT THE "NEIGHBORHOOD" FOR EACH PRECINCT ROUNDTRIPS
 For example:
 
 $ scripts/geographic-baseline/check_neighborhoods.py \
---data testdata/examples/NC_input_data.v4.jsonl \
-< temp/DEBUG_NC_congress_neighborhoods.jsonl
+--data testdata/examples/NC_input_data.jsonl \
+< testdata/examples/NC_congress_neighborhoods.jsonl
 
+NOTE - This script now needs a wrapper to produce the `--data` file from a GeoJSON file.
 """
 
 import argparse
@@ -41,6 +42,8 @@ def main():
 
     #
 
+    print("Checking neighborhoods...")
+
     geoids: List[str] = sorted_geoids(input_data)
 
     geoid_to_index: Dict[str, int] = index_geoids(geoids)
@@ -53,6 +56,8 @@ def main():
             geoid: str = parsed_line["geoid"]
 
             unpack_neighborhood(geoid, parsed_line, index_to_geoid, debug=args.debug)
+
+    print("Done.")
 
 
 def parse_arguments():

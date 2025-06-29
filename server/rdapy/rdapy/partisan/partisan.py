@@ -2,13 +2,14 @@
 
 from .method import *
 from .bias import *
+from .more import *
 from .responsiveness import *
 
 
-def calc_partisan_metrics(Vf: float, Vf_array: list[float]) -> dict:
+def calc_partisan_metrics(Vf: float, Vf_array: List[float]) -> dict:
     """Calculate partisan metrics for a set of districts and statewide vote share.
 
-    NOTE - The variable names here match those in the dra2020/dra-analytics TypeScript code.
+    NOTE - The variable names here mostly match those in the dra2020/dra-analytics TypeScript code.
     """
 
     proportional: bool = True  # shift
@@ -39,7 +40,16 @@ def calc_partisan_metrics(Vf: float, Vf_array: list[float]) -> dict:
     decl: Optional[float] = calc_declination(Vf_array)
     gSym: Optional[float] = calc_global_symmetry(dSVpoints, rSVpoints, Bs50f, N)
 
+    # Efficiency Gap (EG) variations
+    # - Statewide using fractional seats
+    # - Statewide using FPTP seats
+    # - Wasted votes formula -- needs votes by district, so have to calculate separately
     EG: float = calc_efficiency_gap(Vf, estSf)
+    EG_FPTP: float = calc_efficiency_gap(Vf, fptpS / N)
+    # EG_wasted_votes: float = calc_efficiency_gap_wasted_votes(
+    #     d_by_district, r_by_district
+    # )
+
     BsGf: float = (
         est_geometric_seats_bias(Vf, dSVpoints, rSVpoints) / N
     )  # Convert to a fraction [0, 1]
@@ -69,13 +79,18 @@ def calc_partisan_metrics(Vf: float, Vf_array: list[float]) -> dict:
     averageDVf: Optional[float] = sum(_DWins) / len(_DWins) if len(_DWins) > 0 else None
     averageRVf: Optional[float] = sum(_RWins) / len(_RWins) if len(_RWins) > 0 else None
 
+    average_margin = calc_average_margin(Vf_array)
+
     # Build the JSON to match what is produced by the TypeScript code
 
+    # NOTE - Commented a few things out:
+    # - Redundant/derived values, e.g., divide something by # of districts
+    # - Unused metrics
     bias_measurements: dict = {
         "bestS": bestS,
-        "bestSf": bestSf,
+        # "bestSf": bestSf,
         "estS": estS,
-        "estSf": estSf,
+        # "estSf": estSf,
         "deviation": deviation,
         "tOf": TOf,
         "fptpS": fptpS,
@@ -83,9 +98,10 @@ def calc_partisan_metrics(Vf: float, Vf_array: list[float]) -> dict:
         "bV50": Bv50f,
         "decl": decl,
         "rvPoints": rvPoints,
-        "gSym": gSym,
-        "gamma": gamma,
+        # "gSym": gSym,
+        # "gamma": gamma,
         "eG": EG,
+        "eGFPTP": EG_FPTP,
         "bSV": BsGf,
         "prop": prop,
         "mMs": mMs,
@@ -96,12 +112,13 @@ def calc_partisan_metrics(Vf: float, Vf_array: list[float]) -> dict:
     responsiveness_measurements: dict = {
         "cSimple": Cn,
         "cD": cD,
-        "cDf": cDf,
+        # "cDf": cDf,
         "bigR": bigR,
         "littleR": littleR,
         "mIR": MIR,
         "rD": rD,
         "rDf": rDf,
+        "averageMargin": average_margin,
     }
 
     results: dict = {

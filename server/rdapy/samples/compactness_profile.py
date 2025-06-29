@@ -22,7 +22,6 @@ from shapely.geometry import (
 )
 
 from rdapy import *
-from testutils import *
 
 
 def time_function(func) -> Callable[..., Any]:
@@ -44,7 +43,7 @@ def time_function(func) -> Callable[..., Any]:
 
 @time_function
 def timed_compactness(shapes: list, kiwysi: bool = True) -> dict:
-    return calc_compactness(shapes, kiwysi)
+    return calc_compactness_metrics(shapes, kiwysi)
 
 
 @time_function

@@ -3,16 +3,21 @@
 """
 MAP SCORING DATA TO TO A GIVEN GEOJSON FILE
 
-$ scripts/map_scoring_data.py \
---geojson testdata/data/NC_vtd_datasets.v4.geojson \
---data-map temp/DEBUG_data_map.json
-
-$ scripts/map_scoring_data.py \
---geojson testdata/data/NC_vtd_datasets.v4.geojson \
---data-map testdata/examples/NC_data_map.v4.json
+$ scripts/data/map_scoring_data.py \
+--geojson testdata/examples/NC_vtd_datasets.geojson \
+--data-map temp/TEST_data_map.json
 
 NOTE -- The default datasets are for 2020 census, VAP, and CVAP data,
 and the composite election dataset for 2016-2020 elections.
+
+$ scripts/data/map_scoring_data.py \
+--geojson testdata/examples/NC_vtd_datasets.geojson \
+--census T_20_CENS \
+--vap V_20_VAP \
+--cvap V_20_CVAP \
+--elections E_16-20_COMP \
+--data-map temp/TEST_data_map.json \
+--expand-composites
 
 """
 
@@ -58,7 +63,7 @@ def main() -> None:
         implied_elections = [e for e in datasets.keys() if e.startswith("E_")]
     else:  # Grab the specified elections & their constituent elections
         for e in input_elections:
-            if "members" in datasets[e]:
+            if "members" in datasets[e] and args.expand_composites:
                 for k, v in datasets[e]["members"].items():
                     if v in datasets:
                         implied_elections.append(v)
@@ -91,7 +96,7 @@ def make_map(
     elections: List[str],
     dir: str,
     file: str,
-    version: int,
+    version: str,
 ) -> Dict[str, Any]:
     """Make a data map for extracting data & shapes from a geojson file."""
 
@@ -176,17 +181,28 @@ def parse_args() -> Namespace:
         type=str,
         default="V_20_CVAP",
     )
+
+    def split_elections(s):
+        return s.split(",")
+
     parser.add_argument(
         "--elections",
-        type=lambda s: s.split(","),
+        type=split_elections,
         help="Comma-separated list of election datasets to use",
         default=["E_16-20_COMP"],  # Use `__all__` to get all elections
     )
     parser.add_argument(
         "--version",
-        help="The version # to use",
-        type=int,
-        default=4,  # DRA's published geojson files
+        help="The GeoJSON version used",
+        type=str,
+    )
+
+    parser.add_argument(
+        "-x",
+        "--expand-composites",
+        dest="expand_composites",
+        action="store_true",
+        help="Expand composites mode",
     )
 
     parser.add_argument(

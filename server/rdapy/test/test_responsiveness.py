@@ -4,9 +4,15 @@
 TEST COMPETITIVENESS & RESPONSIVENESS METRICS
 """
 
-from rdapy import *
-from rdapy.partisan import EPSILON
-from testutils import *
+from typing import Optional
+
+from rdapy import (
+    count_competitive_districts,
+    approx_equal,
+    est_district_competitiveness,
+    calc_minimal_inverse_responsiveness,
+    OUT_OF_STATE_THRESHOLD,
+)
 
 
 class TestResponsivenessMetrics:
@@ -14,11 +20,11 @@ class TestResponsivenessMetrics:
         # 3 of 7 competitive
         Vf_array: list[float] = [
             0.40,
-            0.45 - EPSILON,
+            0.45 - OUT_OF_STATE_THRESHOLD,
             0.45,
             0.50,
             0.55,
-            0.55 + EPSILON,
+            0.55 + OUT_OF_STATE_THRESHOLD,
             0.60,
         ]
         assert count_competitive_districts(Vf_array) == 3

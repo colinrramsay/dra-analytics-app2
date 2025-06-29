@@ -5,7 +5,6 @@ Sample compactness analytics
 """
 
 from rdapy import *
-from testutils import *
 
 # Load data
 
@@ -15,7 +14,7 @@ shapes = [item[1] for item in shapes]  # discard the id
 
 # Calculate metrics
 
-results: dict = calc_compactness(shapes)
+results: dict = calc_compactness_metrics(shapes)
 
 # Print the results
 
