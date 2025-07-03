@@ -197,35 +197,6 @@ function UploadView({ uploadFile, fetchScorecard, uploadedFile, uploadMessage, s
     // Reset datasets input when state changes
   }, [volumeArgs.plans]);
 
-  // Effect to filter datasets based on existing selections
-  /*
-  useEffect(() => {
-    console.log('Filtering datasets based on current selections:', volumeArgs.datasets);
-    function filterDatasets() {
-      const filters = new Set();
-      // Set filters based on what has already been selected
-      // Only one of each CVAP, VAP, & Census datasets can be selected at a time
-      volumeArgs.datasets.forEach(selected => {
-        if (selected.includes('Citizen Voting Age Population')) filters.add('Citizen Voting Age Population');
-        else if (selected.includes('Voting Age Population') && !selected.includes('Citizen')) filters.add('Voting Age Population');
-        else if (selected.includes('Census')) filters.add('Census');
-      })
-      const newFilteredDatasets = datasets.filter(dataset => {
-        for (let filter of filters) {
-          if (filter !== 'Voting Age Population') {
-            if (dataset.includes(filter)) return false;
-          } else if (filter === 'Voting Age Population' && dataset.includes(filter) && !dataset.includes('Citizen')) {
-            return false; // Exclude if it's VAP but not CVAP
-          }
-        }
-        return true;
-      })
-      setFilteredDatasets(newFilteredDatasets);
-    }
-    filterDatasets();
-  }, [volumeArgs.datasets, datasets])
-  */
-
   // Helpers
 
   // Set plans input for volume scoring
@@ -235,17 +206,6 @@ function UploadView({ uploadFile, fetchScorecard, uploadedFile, uploadMessage, s
       ...prevArgs,
       plans: value});
   }
-
-  // Set state input for volume scoring
-  // function setStateAndPlanTypeInput(value) {
-  //   console.log('Setting state & planType input:', value);
-  //   const prevArgs = volumeArgs;
-  //   setVolumeArgs({
-  //     ...prevArgs,
-  //     state: value.state,
-  //     planType: value.planType
-  //   });
-  // }
 
   // Set file name input for volume scoring
   function setFileNameInput(value) {
