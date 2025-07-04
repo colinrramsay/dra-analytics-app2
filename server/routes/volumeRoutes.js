@@ -23,12 +23,6 @@ const { runScoreScript } = require('../utils/rdapy'); // Import the function to 
 require('dotenv').config();
 const { DATA_PATH, ENSEMBLE_PATH, SCORES_PATH } = require('../utils/filePaths'); // Import file paths from filePaths.js
 
-// const OUTPUT_PATH = path.join(__dirname, process.env.OUTPUT_PATH) || path.join(__dirname, '../../output/'); // Default output path if not set in .env
-// const PLANS_PATH = path.join(__dirname, process.env.PLANS_PATH) || path.join(__dirname, '../../plans/'); // Default input path if not set in .env
-// const GEOJSON_PATH = path.join(__dirname, process.env.GEOJSON_PATH) || path.join(__dirname, '../../sample-data/private-data/');
-// const GRAPH_PATH = path.join(__dirname, process.env.GRAPH_PATH) || path.join(__dirname, '../../sample-data/private-data/');
-// const PRECOMPUTED_PATH = path.join(__dirname, process.env.PRECOMPUTED_PATH) || path.join(__dirname, '../rdapy/testdata/examples/');
-
 //POST to /sync
 //Download requested geojson files from cloud, save locally
 router.post('/sync', async (req, res) => {

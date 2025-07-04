@@ -1,3 +1,7 @@
+/* ===================================
+Export file paths based on environment
+===================================== */
+
 const path = require('path');
 require('dotenv').config(); // Load environment variables from .env file
 
