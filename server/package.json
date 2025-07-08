@@ -1,0 +1,36 @@
+{
+  "name": "dra-analytics-server",
+  "version": "1.0.0",
+  "bin": "index.js",
+  "description": "A specialized tool designed to run DRA's partisan analytics algorithms on election profiles without requiring an associated DRA map or a full plan",
+  "main": "index.js",
+  "scripts": {
+    "start": "NODE_ENV=production node index.js",
+    "dev": "NODE_ENV=development nodemon index.js",
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "build": "pkg . --output ../app/dra-analytics"
+  },
+  "pkg": {
+    "targets": [
+      "node16-win-x64",
+      "node16-macos-x64",
+      "node16-linux-x64"
+    ],
+    "assets": [
+      "dist/**/*"
+    ],
+    "outputPath": "../app"
+  },
+  "author": "Colin Ramsay",
+  "license": "ISC",
+  "dependencies": {
+    "@dra2020/dra-analytics": "^4.1.6",
+    "adm-zip": "^0.5.16",
+    "cors": "^2.8.5",
+    "dotenv": "^16.5.0",
+    "express": "^5.1.0",
+    "nodemon": "^3.1.9",
+    "open": "^8.4.2",
+    "pkg": "^5.8.1"
+  }
+}
