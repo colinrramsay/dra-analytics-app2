@@ -149,6 +149,9 @@ scores
 ensembles
 data
 
+# App builds
+app
+
 # Test data
 **/testdata
 

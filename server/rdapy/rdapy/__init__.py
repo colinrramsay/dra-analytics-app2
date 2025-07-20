@@ -30,6 +30,8 @@ from .base import (
     get_fields,
     #
     DistanceLedger,
+    distance_proxy,
+    distance,
     #
     Precinct,
     District,
@@ -77,6 +79,7 @@ from .compactness import (
     trim_kiwysi_rank,
     #
     # make_circle,
+    wl_make_circle,
     reock_formula,
     polsby_formula,
     #
@@ -153,6 +156,7 @@ from .partisan import (
     make_neighborhood,
     unpack_neighborhood,
     calc_geographic_baseline,
+    eval_partisan_lean,
 )
 
 from .rate import (
