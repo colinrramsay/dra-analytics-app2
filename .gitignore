@@ -155,9 +155,10 @@ app
 # Test data
 **/testdata
 
-# Python virtual environments & dependencies
+# Python virtual environments, dependencies, & build working files
 **/bin
 **/lib
+build/macos
 
 # Python Executables
 **/executables

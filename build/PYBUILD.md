@@ -23,7 +23,7 @@ pip install Fiona geographiclib geopandas libpysal nptyping numpy pandas pyproj 
 # 7. Install additional dependencies that might be needed
 <!-- pip install scipy scikit-learn -->
 # Add rdapy to env path
-cd into server/rdapy
+cd server/rdapy
 export PYTHONPATH="${PYTHONPATH}:$(pwd)"
 
 # 9. Create directories for executables
