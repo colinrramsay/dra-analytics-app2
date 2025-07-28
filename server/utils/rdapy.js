@@ -38,16 +38,11 @@ function runScoreScript(args) {
       scoreProcess = path.join(executablesDir, executableName);
     }
     
-    
-    // Run scoring in either Python or Shell script
-    const scriptType = 'python'; // 'python' or 'shell', can be made dynamic in future
-    const scriptPath = scriptType === 'python' ? 
-      'python scripts/score/score_script.py' : 'scripts/score/SCORE.sh';
+    // If running in development, use the Python script directly, else pass only arguments to Python executable
+    const scriptPath = process.pkg ? '' : path.join(rdapyPath, 'scripts', 'score', 'score_script.py');
 
     // Command to run in the shell
     const command = `
-      cd ${rdapyPath} && 
-      source ${venvPath}/bin/activate && 
       ${scriptPath} \
       --state ${args.state} \
       --plan-type ${args.planType} \
@@ -66,7 +61,7 @@ function runScoreScript(args) {
 
     // Spawn a shell to run the command
     console.log(`Running command: ${command}`);
-    const childProcess = spawn(scoreProcess, ['-c', command]);
+    const childProcess = spawn(scoreProcess, command);
 
     let stdoutData = '';
     let stderrData = '';

@@ -159,6 +159,7 @@ app
 **/bin
 **/lib
 build/macos
+build_venv
 
 # Python Executables
 **/executables
