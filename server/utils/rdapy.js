@@ -27,9 +27,21 @@ function runScoreScript(args) {
     elections: args.elections.length ? `--elections ${electionString}` : '',
   }
   return new Promise((resolve, reject) => {
-    // Run scoring in either Python directly, or via shell command
-    const processType = 'python'; // 'python' or 'shell', can be made dynamic in future
-    const scriptPath = processType === 'python' ? 
+    // Set process type
+    // Python executable in pkg Node binary
+    // Python script in development environment
+  
+    let scoreProcess = path.join(venvPath, 'bin', 'python');
+    if (process.pkg) {
+      let executableName = 'rdapy_score'; // Default executable name, can be made dynamic in future
+      const executablesDir = path.resolve(path.dirname(process.execPath), 'executables');
+      scoreProcess = path.join(executablesDir, executableName);
+    }
+    
+    
+    // Run scoring in either Python or Shell script
+    const scriptType = 'python'; // 'python' or 'shell', can be made dynamic in future
+    const scriptPath = scriptType === 'python' ? 
       'python scripts/score/score_script.py' : 'scripts/score/SCORE.sh';
 
     // Command to run in the shell
@@ -54,7 +66,7 @@ function runScoreScript(args) {
 
     // Spawn a shell to run the command
     console.log(`Running command: ${command}`);
-    const childProcess = spawn('/bin/bash', ['-c', command]);
+    const childProcess = spawn(scoreProcess, ['-c', command]);
 
     let stdoutData = '';
     let stderrData = '';
