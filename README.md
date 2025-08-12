@@ -187,6 +187,10 @@ npm run build
 
 This uses pkg to create executables for Windows, macOS, and Linux in the `app` directory at the project root.
 
+## Building the Python Executable
+
+When launching from a Node binary, the app uses a Python executable to run volume scoring without requiring Python to be installed locally. To build the Python executable, follow the steps in /build/README.md.
+
 ## License
 
 See LICENSE in repository root
