@@ -134,10 +134,30 @@ In the development environment, the Vite dev server proxies requests from the Re
    cd ../client
    npm install
    ```
-3. **Establish environment variables (optional)**
-    - Create a .env file in the server directory with ```PORT = {YOUR-PORT}``` to run Express on a custom port.
-    - If using a custom port, update vite.config.js to set the proxy target to ```http://localhost:{PORT}```
+3. **Establish environment variables**
+    - Create a .env file in the server directory
+    - If using a custom Express port, update vite.config.js to set the proxy target to ```http://localhost:{PORT}```
     - By default, the Express server will run on PORT 3001
+    - All environment variables listed below are optional except VENV_PATH
+
+   ```
+   PORT
+
+   # Path prefixes
+   # Python paths
+   RDAPY_PATH
+   VENV_PATH
+   
+   # Development paths - relative to filePaths.js
+   DATA_PATH
+   ENSEMBLE_PATH
+   SCORES_PATH
+   
+   # PKG paths - relative to /app directory
+   PKG_DATA_PATH
+   PKG_ENSEMBLE_PATH
+   PKG_SCORES_PATH
+   ```
 
 4. **Start the development environment**
    ```bash

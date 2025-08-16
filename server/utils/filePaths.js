@@ -20,5 +20,7 @@ else {
         DATA_PATH: path.join(__dirname, process.env.DATA_PATH) || path.join(__dirname, '../../data/'),
         ENSEMBLE_PATH: path.join(__dirname, process.env.ENSEMBLE_PATH) || path.join(__dirname, '../../ensembles/'),
         SCORES_PATH: path.join(__dirname, process.env.SCORES_PATH) || path.join(__dirname, '../../scores/'),
+        VENV_PATH: path.resolve(process.env.VENV_PATH),
+        RDAPY_PATH: path.resolve(process.env.RDAPY_PATH) || path.resolve(__dirname, '../../rdapy'),
     }
 }

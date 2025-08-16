@@ -2,19 +2,11 @@ const { spawn } = require('child_process');
 const path = require('path');
 require('dotenv').config()
 
-/**
- * Runs the SCORE.sh script with the provided parameters
- * @param {string} rdapyPath - Path to the rdapy directory
- * @param {string} venvPath - Path to your virtual environment
- * @returns {Promise<string>} - Promise that resolves with the command output
- */
+const { VENV_PATH, RDAPY_PATH } = require('../utils/filePaths');
+
 function runScoreScript(args) {
-  // Manually defined paths for testing
-  const rdapyPath = process.env.RDAPY_PATH || path.resolve(__dirname, '../../rdapy');
-  const venvPath = process.env.VENV_PATH;
-  const pythonPath = path.join('/Users/colinramsay/.venvs/rdapy', 'bin', 'python');
-  
-  let processArgs;
+  const rdapyPath = RDAPY_PATH;
+  const venvPath = VENV_PATH;
   
   const electionString = args.elections.join(',');
   // Constructed strings for optional command args based on user input: input || ''
