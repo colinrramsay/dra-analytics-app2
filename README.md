@@ -134,7 +134,13 @@ In the development environment, the Vite dev server proxies requests from the Re
    cd ../client
    npm install
    ```
-3. **Establish environment variables**
+
+3. **Set up virtual environment for RDAPY package**
+   This step is only required for utilizing the volume scoring functionality.
+   - Follow the instructions in server/rdapy/README.md for setting up a virtual python environment
+   - Note your chosen virtual environment path for setting the VENV_PATH variable below
+
+4. **Establish environment variables**
     - Create a .env file in the server directory
     - If using a custom Express port, update vite.config.js to set the proxy target to ```http://localhost:{PORT}```
     - By default, the Express server will run on PORT 3001
@@ -144,33 +150,34 @@ In the development environment, the Vite dev server proxies requests from the Re
    PORT
 
    # Path prefixes
-   # Python paths
-   RDAPY_PATH
-   VENV_PATH
+   # Python paths - absolute paths
+   RDAPY_PATH #Path to RDAPY package
+   VENV_PATH #Path to virtual python environment for running RDAPY scripts
    
    # Development paths - relative to filePaths.js
-   DATA_PATH
-   ENSEMBLE_PATH
-   SCORES_PATH
+   DATA_PATH #Path to available availabe datasets for volume scoring - datasets accessed via the cloud are saved locally here
+   ENSEMBLE_PATH #Path to available ensembles for volume scoring
+   SCORES_PATH #Output path for scoring results
    
-   # PKG paths - relative to /app directory
+   # PKG paths - relative to /app directory (process.execPath for pkg)
+   # PKG versions of the above paths, specifically for when running the app from a node binary. It is not recommended to customize these paths
    PKG_DATA_PATH
    PKG_ENSEMBLE_PATH
    PKG_SCORES_PATH
    ```
 
-4. **Start the development environment**
+5. **Start the development environment**
    ```bash
    # In the server directory
    npm run dev
    ```
    The Express server spawns a child process to start the Vite React server in the development environment.
 
-5. **Access the application**
+6. **Access the application**
    - The client will be available at `http://localhost:5173` (default Vite port)
    - The server will be running at `http://localhost:3001` (default Express port - in the dev environment the root domain will not serve anything)
 
-6. **Close the application**
+7. **Close the application**
    - Use the 'exit' button in the UI to kill both the Express and Vite servers
    - Once the servers are shutdown, you may close the browser window.
 
