@@ -23,7 +23,7 @@ function runScoreScript(args) {
     // Python executable in pkg Node binary
     // Python script in development environment
   
-    let scoreProcess = path.join(venvPath, 'bin', 'python');
+    let scoreProcess = path.join(VENV_PATH, 'bin', 'python3.12');
     if (process.pkg) {
       let executableName = 'rdapy_score'; // Default executable name, can be made dynamic in future
       const executablesDir = path.resolve(path.dirname(process.execPath), 'executables');
@@ -31,29 +31,56 @@ function runScoreScript(args) {
     }
     
     // If running in development, use the Python script directly, else pass only arguments to Python executable
-    const scriptPath = process.pkg ? '' : path.join(rdapyPath, 'scripts', 'score', 'score_script.py');
+    const scriptPath = process.pkg ? '' : path.join(RDAPY_PATH, 'scripts', 'score', 'score_script.py');
+
+    // Set required command arguments
+    const commandArgs = [
+      scriptPath,
+      '--state', args.state,
+      '--plan-type', args.planType,
+      '--geojson', args.geojson,
+      '--graph', args.graph,
+      '--plans', args.plans,
+      '--mode', 'all',
+      '--scores', `${args.output}_scores.csv`,
+      '--by-district', `${args.output}_by-district.jsonl`
+    ]
+
+    // Push option args if they exist
+    if (args.precomputed) commandArgs.push('--precomputed', args.precomputed);
+    if (args.census) commandArgs.push('--census', args.census);
+    if (args.vap) commandArgs.push('--vap', args.vap);
+    if (args.cvap) commandArgs.push('--cvap', args.cvap);
+    if (args.elections.length) commandArgs.push('--elections', electionString);
 
     // Command to run in the shell
-    const command = `
-      ${scriptPath} \
-      --state ${args.state} \
-      --plan-type ${args.planType} \
-      --geojson ${args.geojson} \
-      --graph ${args.graph} \
-      ${commandStrings.precomputed} \
-      --plans ${args.plans} \
-      ${commandStrings.mode} \
-      ${commandStrings.census} \
-      ${commandStrings.vap} \
-      ${commandStrings.cvap} \
-      ${commandStrings.elections} \
-      --scores ${args.output}_scores.csv \
-      --by-district ${args.output}_by-district.jsonl
-    `;
+    // const command = `
+    //   ${scriptPath} \
+    //   --state ${args.state} \
+    //   --plan-type ${args.planType} \
+    //   --geojson ${args.geojson} \
+    //   --graph ${args.graph} \
+    //   ${commandStrings.precomputed} \
+    //   --plans ${args.plans} \
+    //   ${commandStrings.mode} \
+    //   ${commandStrings.census} \
+    //   ${commandStrings.vap} \
+    //   ${commandStrings.cvap} \
+    //   ${commandStrings.elections} \
+    //   --scores ${args.output}_scores.csv \
+    //   --by-district ${args.output}_by-district.jsonl
+    // `;
 
     // Spawn a shell to run the command
-    console.log(`Running command: ${command}`);
-    const childProcess = spawn(scoreProcess, command);
+    console.log('Score process:', scoreProcess);
+    console.log(`Running script with args: ${commandArgs.join(' ')}`);
+    const childProcess = spawn(scoreProcess, commandArgs, {
+      cwd: RDAPY_PATH,
+      env: {
+        ...process.env,
+        PYTHONPATH: RDAPY_PATH
+      }
+    });
 
     let stdoutData = '';
     let stderrData = '';
