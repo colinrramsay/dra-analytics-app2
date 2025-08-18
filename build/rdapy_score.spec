@@ -6,12 +6,18 @@ block_cipher = None
 a = Analysis(
     ['../server/rdapy/scripts/score/score_script.py'],
     pathex=['../server/rdapy'],
-    binaries=[],
+    binaries=[
+       # ('../server/rdapy/scripts/data/map_scoring_data.py', 'scripts/data'),
+    ],
     datas=[
+        ('../build_venv/lib/python3.12/site-packages', 'site-packages'),
         ('../server/rdapy/scripts', 'scripts'),
         ('../server/rdapy/rdapy', 'rdapy'),
+        ('../server/rdapy/scripts/data', 'scripts/data'),
+        ('../server/rdapy/scripts/score', 'scripts/score'),
     ],
     hiddenimports=[
+        'rdapy',
         'shapely',
         'geopandas',
         'pandas',
@@ -48,9 +54,9 @@ a = Analysis(
         'collections',
         'itertools',
     ],
-    hookspath=[],
+    hookspath=['./build'],
     hooksconfig={},
-    runtime_hooks=[],
+    runtime_hooks=['./build/fix_subprocess_paths.py'], # Patch subprocess.run to include bundle dir in PYTHONPATH
     excludes=[],
     win_no_prefer_redirects=False,
     win_private_assemblies=False,

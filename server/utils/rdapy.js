@@ -5,8 +5,6 @@ require('dotenv').config()
 const { VENV_PATH, RDAPY_PATH } = require('../utils/filePaths');
 
 function runScoreScript(args) {
-  const rdapyPath = RDAPY_PATH;
-  const venvPath = VENV_PATH;
   
   const electionString = args.elections.join(',');
   // Constructed strings for optional command args based on user input: input || ''
@@ -31,11 +29,13 @@ function runScoreScript(args) {
     }
     
     // If running in development, use the Python script directly, else pass only arguments to Python executable
-    const scriptPath = process.pkg ? '' : path.join(RDAPY_PATH, 'scripts', 'score', 'score_script.py');
+    const scriptPath = process.pkg ? null : path.join(RDAPY_PATH, 'scripts', 'score', 'score_script.py');
+   
+    const commandArgs = [];
+    if (scriptPath) commandArgs.push(scriptPath); // Add script path if not in pkg
 
-    // Set required command arguments
-    const commandArgs = [
-      scriptPath,
+     // Set required command arguments
+    commandArgs.push(
       '--state', args.state,
       '--plan-type', args.planType,
       '--geojson', args.geojson,
@@ -44,7 +44,7 @@ function runScoreScript(args) {
       '--mode', 'all',
       '--scores', `${args.output}_scores.csv`,
       '--by-district', `${args.output}_by-district.jsonl`
-    ]
+    );
 
     // Push option args if they exist
     if (args.precomputed) commandArgs.push('--precomputed', args.precomputed);
@@ -74,12 +74,11 @@ function runScoreScript(args) {
     // Spawn a shell to run the command
     console.log('Score process:', scoreProcess);
     console.log(`Running script with args: ${commandArgs.join(' ')}`);
+    const envVars = { ...process.env };
+    if (RDAPY_PATH) envVars.PYTHONPATH = RDAPY_PATH; // Only set PYTHONPATH if RDAPY_PATH is defined
     const childProcess = spawn(scoreProcess, commandArgs, {
-      cwd: RDAPY_PATH,
-      env: {
-        ...process.env,
-        PYTHONPATH: RDAPY_PATH
-      }
+      cwd: process.pkg ? path.dirname(process.execPath) : RDAPY_PATH,
+      env: envVars,
     });
 
     let stdoutData = '';
