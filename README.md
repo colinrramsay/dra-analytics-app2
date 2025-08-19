@@ -214,9 +214,20 @@ npm run build
 
 This uses pkg to create executables for Windows, macOS, and Linux in the `app` directory at the project root.
 
-## Building the Python Executable
+## Setting the pkg virtual environment
 
-When launching from a Node binary, the app uses a Python executable to run volume scoring without requiring Python to be installed locally. To build the Python executable, follow the steps in /build/README.md.
+When launching from a Node binary, the app looks for a virtual Python environment 'venv' in the same directory. This virtual environment has the same requirements as the dev virtual environment:
+
+```bash
+# From the project root
+pyenv shell 3.12
+python3 -m venv /app/venv
+source /app/venv/bin/activate
+pip install -r /server/rdapy/requirements.txt
+pip install --upgrade pip
+deactivate
+pyenv shell --unset
+```
 
 ## License
 
