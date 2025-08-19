@@ -7,13 +7,13 @@ require('dotenv').config(); // Load environment variables from .env file
 
 // File paths if in node binary
 if (process.pkg) {
-    const executableDir = path.dirname(process.execPath);
+    const binaryDir = path.dirname(process.execPath);
     module.exports = {
-        DATA_PATH: process.env.PKG_DATA_PATH ? path.join(executableDir, process.env.PKG_DATA_PATH) : path.join(executableDir, 'data/'),
-        ENSEMBLE_PATH: process.env.PKG_ENSEMBLE_PATH ? path.join(executableDir, process.env.PKG_ENSEMBLE_PATH) : path.join(executableDir, 'ensembles/'),
-        SCORES_PATH: process.env.PKG_SCORES_PATH ? path.join(executableDir, process.env.PKG_SCORES_PATH) : path.join(executableDir, 'scores/'),
-        VENV_PATH: '', // VENV_PATH is not used in production build but its value is called in rdapy.js and so it is set to an empty string
-        RDAPY_PATH: null, // RDAPY_PATH is not used in production build
+        DATA_PATH: process.env.PKG_DATA_PATH ? path.join(binaryDir, process.env.PKG_DATA_PATH) : path.join(binaryDir, 'data/'),
+        ENSEMBLE_PATH: process.env.PKG_ENSEMBLE_PATH ? path.join(binaryDir, process.env.PKG_ENSEMBLE_PATH) : path.join(binaryDir, 'ensembles/'),
+        SCORES_PATH: process.env.PKG_SCORES_PATH ? path.join(binaryDir, process.env.PKG_SCORES_PATH) : path.join(binaryDir, 'scores/'),
+        VENV_PATH: path.join(binaryDir, 'venv'),
+        RDAPY_PATH: binaryDir,
     }
 } 
 // File paths if in development or production build

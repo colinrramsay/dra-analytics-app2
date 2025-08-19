@@ -22,17 +22,18 @@ function runScoreScript(args) {
     // Python script in development environment
   
     let scoreProcess = path.join(VENV_PATH, 'bin', 'python3.12');
-    if (process.pkg) {
-      let executableName = 'rdapy_score'; // Default executable name, can be made dynamic in future
-      const executablesDir = path.resolve(path.dirname(process.execPath), 'executables');
-      scoreProcess = path.join(executablesDir, executableName);
-    }
+    // if (process.pkg) {
+    //   let executableName = 'rdapy_score'; // Default executable name, can be made dynamic in future
+    //   const executablesDir = path.resolve(path.dirname(process.execPath), 'executables');
+    //   scoreProcess = path.join(executablesDir, executableName);
+    // }
     
     // If running in development, use the Python script directly, else pass only arguments to Python executable
-    const scriptPath = process.pkg ? null : path.join(RDAPY_PATH, 'scripts', 'score', 'score_script.py');
+    const scriptPath = path.join(RDAPY_PATH, 'scripts', 'score', 'score_script.py');
+    //const scriptPath = process.pkg ? null : path.join(RDAPY_PATH, 'scripts', 'score', 'score_script.py');
    
     const commandArgs = [];
-    if (scriptPath) commandArgs.push(scriptPath); // Add script path if not in pkg
+    if (scriptPath) commandArgs.push(scriptPath);
 
      // Set required command arguments
     commandArgs.push(
@@ -72,13 +73,21 @@ function runScoreScript(args) {
     // `;
 
     // Spawn a shell to run the command
+    console.log(process.env.PYTHONPATH); //debugging log
     console.log('Score process:', scoreProcess);
     console.log(`Running script with args: ${commandArgs.join(' ')}`);
-    const envVars = { ...process.env };
-    if (RDAPY_PATH) envVars.PYTHONPATH = RDAPY_PATH; // Only set PYTHONPATH if RDAPY_PATH is defined
+    
+    const venvBin = process.platform === "win32"
+      ? path.join(VENV_PATH, "Scripts")
+      : path.join(VENV_PATH, "bin");
+    
     const childProcess = spawn(scoreProcess, commandArgs, {
       cwd: process.pkg ? path.dirname(process.execPath) : RDAPY_PATH,
-      env: envVars,
+      env: {
+        ...process.env,
+        PATH: `${venvBin}${path.delimiter}${process.env.PATH}`,
+        PYTHONPATH: path.join(VENV_PATH, 'lib', 'python3.12', 'site-packages'),
+      },
     });
 
     let stdoutData = '';
